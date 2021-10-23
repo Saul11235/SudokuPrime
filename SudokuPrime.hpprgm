@@ -1,0 +1,20 @@
+#pragma mode( separator(.,;) integer(h32) )
+
+// SudokuPrime por Edwin Saul/Saul11235
+// sudoku game for hp prime calculators
+// sudoku para calculadoras ho prime
+
+
+//Variables JuegoActual
+
+
+
+//Funciones
+
+
+//--------------------------------------
+VIEW "Sudoku",START()
+BEGIN
+  MSGBOX("Sudoku");
+END;
+//--------------------------------------
