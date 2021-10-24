@@ -6,15 +6,67 @@
 
 
 //Variables JuegoActual
+  TipoSudoku:=1; //1 tipo 2x2 - 2 tipo 2x3 - 3 tipo 3x3 
 
+ 
+ //PARA GENERAR
+  Cuadros2x2:=[[1,2,5,6],[3,4,7,8],[9,10,13,14],[11,12,15,16]];
+  Filas2x2:=[[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16],[1,5,9,13],[2,6,10,14],[3,7,11,15],[4,8,12,16]];
+  Fichas2x2:=[1,2,3,4];
+  NroFichasTipo2x2:=4;
+  TotalFichas2x2:=16;
 
+ //Variables para generador
+  CuadroGenerador:=[0];
+  FilasGenerador:=[0];
+  FichasGenerador:=[0];
+  NroFichasTipoGenerador:=0;
+  TotalFichasGenerador:=1;
+ //------ TABLERO-------
+    FichasTablero:=[0];
+    SeConoceFichaGenerada:=[0]; // para generador indica si el valor ha sido generado o no
+  
 
 //Funciones
 
+GenerarSudoku();
+GraficarSudoku();
 
 //--------------------------------------
 VIEW "Sudoku",START()
 BEGIN
-  MSGBOX("Sudoku");
+  GenerarSudoku(); 
+  GraficarSudoku();
 END;
 //--------------------------------------
+
+EXPORT GenerarSudoku() 
+BEGIN
+  CASE
+    IF TipoSudoku=1 THEN
+      CuadroGenerador       :=Cuadros2x2;
+      FilasGenerador        :=Filas2x2;
+      FichasGenerador       :=Fichas2x2;
+      NroFichasTipoGenerador:=NroFichasTipo2x2;
+      TotalFichasGenerador  :=TotalFichas2x2;        
+    END
+  END;
+  //-------------------------
+  FichasTablero:=RANDOM(TotalFichasGenerador,0,0); 
+  SeConoceFichaGenerada:=RANDOM(TotalFichasGenerador,0,0);
+
+END;
+
+//---------------------------------------
+
+EXPORT GraficarSudoku()
+BEGIN
+  startview(-4);
+  RECT_P(0,0,350,350,RGB(250,250,250),RGB(250,250,250));
+
+
+  WAIT(0);
+END;
+
+
+
