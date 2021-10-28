@@ -210,7 +210,9 @@ BEGIN
   WHILE ContadorTablero<NroCasillas DO
      ContadorTablero:=ContadorTablero+1;
      FichaParaRelleno:=CasillaConPocasDudas();
-     RellenarCasillero(FichaParaRelleno);
+     IF NOT(RellenarCasillero(FichaParaRelleno)) THEN
+        ContadorTablero:=NroCasillas; //terminar ciclo
+     END;
   END;
    IF ΣLIST(CasillaConocida)=NroCasillas THEN
      RETURN(1); //Si se pudo rellenar todo el tablero
