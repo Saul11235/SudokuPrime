@@ -1,72 +1,237 @@
 #pragma mode( separator(.,;) integer(h32) )
+TipoJuego:=2; //2x2 tipo1
+//---------------------------------------------------
+//TIPO1 2x2
+LOCAL DatosGrupos22:={{1,2,5,6},{3,4,7,8},{9,10,13,14},{11,12,15,16},{1,2,3,4},{5,6,7,8},{9,10,11,12},{13,14,15,16},{1,5,9,13},{2,6,10,14},{3,7,11,15},{4,8,12,16}};
+LOCAL DatosCasillas22:={{1,5,9},{1,5,10},{2,5,11},{2,5,12},{1,6,9},{1,6,10},{2,6,11},{2,6,12},{3,7,9},{3,7,10},{4,7,11},{4,7,12},{3,8,9},{3,8,10},{4,8,11},{4,8,12}};
+LOCAL NroCasillas22:=16;
+LOCAL NroFichas22:=4;
+LOCAL Fuente22:=7;
+LOCAL Padding22:=35;
+//TIPO2 2x3
+LOCAL DatosGrupos23:={{1,2,3,7,8,9},{4,5,6,10,11,12},{13,14,15,19,20,21},{16,17,18,22,23,24},{25,26,27,31,32,33},{28,29,30,34,35,36},{1,2,3,4,5,6},{7,8,9,10,11,12},{13,14,15,16,17,18},{19,20,21,22,23,24},{25,26,27,28,29,30},{31,32,33,34,35,36},{1,7,13,19,25,31},{2,8,14,20,26,32},{3,9,15,21,27,33},{4,10,16,22,28,34},{5,11,17,23,29,35},{6,12,18,24,30,36}};
+LOCAL DatosCasillas23:={{1,7,13},{1,7,4},{1,7,15},{2,7,16},{2,7,17},{2,7,18},{1,8,13},{1,8,14},{1,8,15},{2,8,16},{2,8,17},{2,8,18},{3,9,13},{3,9,14},{3,9,15},{4,9,16},{4,9,17},{4,9,18},{3,10,13},{3,10,14},{3,10,15},{4,10,16},{4,10,17},{4,10,18},{5,11,13},{5,11,14},{5,11,15},{6,11,16},{6,11,17},{6,11,18},{5,12,13},{5,12,14},{5,12,15},{6,12,16},{6,12,17},{6,12,18}};
+LOCAL NroCasillas23:=36;
+LOCAL NroFichas23:=6;
+LOCAL Fuente23:=6;
+LOCAL Padding23:=30;
+//---------------------------------------------------
+//variables para configurar tipo de sudoku
+LOCAL DatosGrupos,DatosCasillas,NroCasillas,NroFichas,Fuente,Padding;
+//---------------------------------------------------
+//variables generadas
+LOCAL NroGrupos,Casillas,CasillaConocida,PosibilidadGrupo,PosibilidadCasillas,NroPosibilidadGrupo,ContadorCasillas;
+LOCAL ContadorGenerador:=0;
+//---------------------------------------------------
+  ConfigurarTipoSudoku();
+  AlistarVariablesGenerador();
+  BorrarPosibilidadGrupo(CodGrupo,FichaParaBorrar);
+  BorrarPosibilidadCasilla(CodCasilla,FichaParaBorrar);
+  PosibleFichaParaCasilla(CodCasilla);
+  SePuedeColocarFicha(CodCasilla);
+  RellenarCasillero(CodCasilla); 
+  CasillaConPocasDudas(); 
+  RellenarTablero();
+  GenerarSudoku();
+  Grafico(); 
+//---------------------------------------------------
 
-// SudokuPrime por Edwin Saul/Saul11235
-// sudoku game for hp prime calculators
-// sudoku para calculadoras ho prime
-
-
-//Variables JuegoActual
-  TipoSudoku:=1; //1 tipo 2x2 - 2 tipo 2x3 - 3 tipo 3x3 
-
- 
- //PARA GENERAR
-  Cuadros2x2:=[[1,2,5,6],[3,4,7,8],[9,10,13,14],[11,12,15,16]];
-  Filas2x2:=[[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16],[1,5,9,13],[2,6,10,14],[3,7,11,15],[4,8,12,16]];
-  Fichas2x2:=[1,2,3,4];
-  NroFichasTipo2x2:=4;
-  TotalFichas2x2:=16;
-
- //Variables para generador
-  CuadroGenerador:=[0];
-  FilasGenerador:=[0];
-  FichasGenerador:=[0];
-  NroFichasTipoGenerador:=0;
-  TotalFichasGenerador:=1;
- //------ TABLERO-------
-    FichasTablero:=[0];
-    SeConoceFichaGenerada:=[0]; // para generador indica si el valor ha sido generado o no
-  
-
-//Funciones
-
-GenerarSudoku();
-GraficarSudoku();
-
-//--------------------------------------
 VIEW "Sudoku",START()
-BEGIN
-  GenerarSudoku(); 
-  GraficarSudoku();
+BEGIN 
+  ConfigurarTipoSudoku();
+  AlistarVariablesGenerador();
+  Grafico(); 
 END;
-//--------------------------------------
-
-EXPORT GenerarSudoku() 
+//---------------------------------------------------
+EXPORT ConfigurarTipoSudoku() 
 BEGIN
   CASE
-    IF TipoSudoku=1 THEN
-      CuadroGenerador       :=Cuadros2x2;
-      FilasGenerador        :=Filas2x2;
-      FichasGenerador       :=Fichas2x2;
-      NroFichasTipoGenerador:=NroFichasTipo2x2;
-      TotalFichasGenerador  :=TotalFichas2x2;        
-    END
+   IF TipoJuego=1 THEN   //CASO SUDOKU 2x2-------
+    DatosGrupos:=DatosGrupos22;
+    DatosCasillas:=DatosCasillas22;
+    NroCasillas:=NroCasillas22;
+    NroFichas:=NroFichas22;
+    Fuente:=Fuente22;
+    Padding:=Padding22;
+   END;
+   IF TipoJuego=2 THEN   //CASO SUDOKU 2x3-------
+    DatosGrupos:=DatosGrupos23;
+    DatosCasillas:=DatosCasillas23;
+    NroCasillas:=NroCasillas23;
+    NroFichas:=NroFichas23;
+    Fuente:=Fuente23;
+    Padding:=Padding23;
+   END;
   END;
-  //-------------------------
-  FichasTablero:=RANDOM(TotalFichasGenerador,0,0); 
-  SeConoceFichaGenerada:=RANDOM(TotalFichasGenerador,0,0);
-
+  AlistarVariablesGenerador();
 END;
+//---------------------------------------------------
+EXPORT AlistarVariablesGenerador()
+BEGIN
+  Casillas:=MAKELIST(0,X,1,NroCasillas,1);
+  CasillaConocida:=MAKELIST(0,X,1,NroCasillas,1);
+  LOCAL ListaFichas:=MAKELIST(X,X,1,NroFichas,1);
+  NroGrupos:=SIZE(DatosGrupos);
+  PosibilidadGrupo:=MAKELIST(ListaFichas,X,1,NroGrupos,1);
+  PosibilidadCasillas:=MAKELIST(ListaFichas,X,1,NroCasillas,1);
+  NroPosibilidadGrupo:=MAKELIST(NroFichas,X,1,NroGrupos,1);
+  ContadorCasillas:=NroCasillas;
+END;
+//---------------------------------------------------
+EXPORT BorrarPosibilidadGrupo(CodGrupo,FichaParaBorrar)
+BEGIN
+  LOCAL PosEsteGrupo:=PosibilidadGrupo[CodGrupo];
+  LOCAL PosicionLista:=POS(PosEsteGrupo,FichaParaBorrar);
+  IF PosicionLista THEN
+     LOCAL ListaReducida:=SUPPRESS(PosEsteGrupo,PosicionLista);
+     PosibilidadGrupo[CodGrupo]:=ListaReducida;
+     NroPosibilidadGrupo[CodGrupo]:=NroPosibilidadGrupo[CodGrupo]-1;
+  END;
+END;
+//---------------------------------------------------
+EXPORT BorrarPosibilidadCasilla(CodCasilla,FichaParaBorrar)
+BEGIN
+  LOCAL PosEstaFicha:=PosibilidadCasillas[CodCasilla];
+  LOCAL PosicionLista:=POS(PosEstaFicha,FichaParaBorrar);
+  IF PosicionLista THEN
+     LOCAL ListaReducida:=SUPPRESS(PosEstaFicha,PosicionLista);
+     PosibilidadCasillas[CodCasilla]:=ListaReducida;
+  END;
+END;
+//---------------------------------------------------
+EXPORT PosibleFichaParaCasilla(CodCasilla)
+BEGIN
+  //No try-catch
+  LOCAL PosibilidadesEstaCasilla:=PosibilidadCasillas[CodCasilla];
+  LOCAL Dimension:=SIZE(PosibilidadesEstaCasilla);
+  LOCAL PosicionAleatoria:=RANDINT(1,Dimension);
+  RETURN(PosibilidadesEstaCasilla[PosicionAleatoria  ]);
+END;
+//---------------------------------------------------
+EXPORT SePuedeColocarFicha(CodCasilla)
+BEGIN
+  LOCAL HayPosiblesFichas:=SIZE(PosibilidadCasillas[CodCasilla]);
+  LOCAL SeConoceElDato:=CasillaConocida[CodCasilla];
+   IF HayPosiblesFichas AND NOT(SeConoceElDato) THEN
+    RETURN(1); //si se puede colocar la ficha
+   ELSE
+    RETURN(0); //No se puede colocar la ficha
+   END;
+END;
+//---------------------------------------------------
+EXPORT RellenarCasillero(CodCasilla)
+BEGIN
+   IF  SePuedeColocarFicha(CodCasilla) THEN
+     LOCAL FichaAleatoria:=PosibleFichaParaCasilla(CodCasilla);
+     Casillas[CodCasilla]:=FichaAleatoria;
+     CasillaConocida[CodCasilla]:=1;
+     ContadorCasillas:=ContadorCasillas-1;
+     //Borrando Posibilidades en grupos y casillas
+     LOCAL GruposImplicados:=DatosCasillas[CodCasilla];
+     LOCAL Contador:=0;
+     LOCAL Limite:=SIZE(GruposImplicados);
+       WHILE Contador<Limite DO
+         Contador:=Contador+1;
+         LOCAL GrupoImplicado:=GruposImplicados[Contador];
+         BorrarPosibilidadGrupo(GrupoImplicado,FichaAleatoria);
+         LOCAL CasillasImplicadas:=DatosGrupos[GrupoImplicado];
+         LOCAL Contador2:=0;
+         LOCAL Limite2:=SIZE(CasillasImplicadas);
+           WHILE Contador2<Limite2 DO
+             Contador2:=Contador2+1;
+             LOCAL CasillaImplicada:=CasillasImplicadas[Contador2];
+             BorrarPosibilidadCasilla(CasillaImplicada,FichaAleatoria);
+           END;
+       END; 
+     RETURN(1);//Se relleno el casillero, todo ok
+   ELSE
+     RETURN(0);//No se rellenó el casillero VOLVER A GENERAR!!!
+   END;
+END;
+//---------------------------------------------------
+EXPORT CasillaConPocasDudas()
+BEGIN
+  LOCAL Contador:=0;
+  LOCAL PosibilidadMenorDetectada:=NroFichas+1;
+  LOCAL GrupoConMenosDudas:=0;
+   WHILE Contador<NroGrupos DO
+    Contador:=Contador+1;
+    LOCAL GrupoAnalizado:=Contador;
+    LOCAL PosibilidadGrupoAnalizado:=NroPosibilidadGrupo[GrupoAnalizado];
+      IF PosibilidadGrupoAnalizado THEN
+        IF PosibilidadMenorDetectada>PosibilidadGrupoAnalizado THEN
+           PosibilidadMenorDetectada:=PosibilidadGrupoAnalizado;
+           GrupoConMenosDudas:=GrupoAnalizado;
+        END;
+      END;
+   END;
+  LOCAL PosiblesCasillasConMenosDudas:=DatosGrupos[GrupoConMenosDudas];
+  LOCAL ListaCasillasMenosDudas:={};
+  Contador:=0;
+   WHILE Contador<NroFichas DO
+    Contador:=Contador+1;
+    LOCAL FichaAnalizada:=PosiblesCasillasConMenosDudas[Contador];
+      IF NOT(CasillaConocida[FichaAnalizada]) THEN
+        ListaCasillasMenosDudas:=append(ListaCasillasMenosDudas,FichaAnalizada);
+      END; 
+   END;
+  LOCAL TamanoListaCasillas:=SIZE(ListaCasillasMenosDudas);
+  LOCAL NroAleatorio:=RANDINT(1,TamanoListaCasillas);
+  RETURN(ListaCasillasMenosDudas[NroAleatorio]);
+END;
+//---------------------------------------------------
+EXPORT RellenarTablero()
+BEGIN
+  AlistarVariablesGenerador();
+  LOCAL ContadorTablero:=0;
+  LOCAL FichaParaRelleno;
+  WHILE ContadorTablero<NroCasillas DO
+     ContadorTablero:=ContadorTablero+1;
+     FichaParaRelleno:=CasillaConPocasDudas();
+     RellenarCasillero(FichaParaRelleno);
+  END;
+   IF ΣLIST(CasillaConocida)=NroCasillas THEN
+     RETURN(1); //Si se pudo rellenar todo el tablero
+   ELSE
+     RETURN(0); //No se pudo rellenar el tablero
+   END;
+END;
+//---------------------------------------------------
+EXPORT GenerarSudoku()
+BEGIN
+  LOCAL NumeroDeCiclos:=0; //cuenta los numeros de los ciclos que se rellena el tablero
+  LOCAL NoTenemosTableroListo:=1; //todavía no tenemos el tablero
+  WHILE NoTenemosTableroListo DO
+    NumeroDeCiclos:=NumeroDeCiclos+1; //Contador de ciclos
+    IF RellenarTablero() THEN
+       NoTenemosTableroListo:=0; //Tablero listo :) 
+    END;
+  END;
+  RETURN(NumeroDeCiclos); //devuelve el numero de ciclos
+END;
+//---------------------------------------------------
 
-//---------------------------------------
-
-EXPORT GraficarSudoku()
+EXPORT Grafico()
 BEGIN
   startview(-4);
   RECT_P(0,0,350,350,RGB(250,250,250),RGB(250,250,250));
-
-
+    //variables inicio
+      LOCAL InicioX:=5;
+      LOCAL InicioY:=5;
+     //contadores para ciclo
+    LOCAL ContadorTotal:=0;
+    LOCAL ContadorX:=0;   
+    LOCAL ContadorY:=0;
+    //Ciclo Dibujo
+    WHILE ContadorTotal<NroCasillas DO
+      LOCAL Fila:=IP(ContadorTotal/NroFichas);      
+      LOCAL Columna:=ContadorTotal-Fila*NroFichas;
+      ContadorTotal:=ContadorTotal+1;
+      //--dibujo letra
+      LOCAL Texto:=Casillas[ContadorTotal];
+      TEXTOUT_P(Texto,InicioX+Padding*Columna,InicioY+Padding*Fila,Fuente,RGB(0,0,0));
+    END;
   WAIT(0);
 END;
-
-
+//---------------------------------------------------
 
