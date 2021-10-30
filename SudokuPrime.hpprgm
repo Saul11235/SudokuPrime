@@ -14,7 +14,6 @@ LOCAL NroCasillas22:=16;
 LOCAL NroFichas22:=4;
 LOCAL Fuente22:=7;
 LOCAL Padding22:=35;
-LOCAL LimiteBiblioteca22:=5;
 LOCAL LimiteIteracionGen22:=3;
 LOCAL NroCasillasFijas22:=7;
 //TIPO2 2x3
@@ -24,8 +23,7 @@ LOCAL NroCasillas23:=36;
 LOCAL NroFichas23:=6;
 LOCAL Fuente23:=6;
 LOCAL Padding23:=30;
-LOCAL LimiteBiblioteca23:=6;
-LOCAL LimiteIteracionGen23:=10;
+LOCAL LimiteIteracionGen23:=5;
 LOCAL NroCasillasFijas23:=15;
 //TIPO2 3x3
 LOCAL DatosGrupos33:={{1,2,3,10,11,12,19,20,21},{4,5,6,13,14,15,22,23,24},{7,8,9,16,17,18,25,26,27},{28,29,30,37,38,39,46,47,48},{31,32,33,40,41,42,49,50,51},{34,35,36,43,44,45,52,53,54},{55,56,57,64,65,66,73,74,75},{58,59,60,67,68,69,76,77,78},{61,62,63,70,71,72,79,80,81},{1,2,3,4,5,6,7,8,9},{10,11,12,13,14,15,16,17,18},{19,20,21,22,23,24,25,26,27},{28,29,30,31,32,33,34,35,36},{37,38,39,40,41,42,43,44,45},{46,47,48,49,50,51,52,53,54},{55,56,57,58,59,60,61,62,63},{64,65,66,67,68,69,70,71,72},{73,74,75,76,77,78,79,80,81},{1,10,19,28,37,46,55,64,73},{2,11,20,29,38,47,56,65,74},{3,12,21,30,39,48,57,66,75},{4,13,22,31,40,49,58,67,76},{5,14,23,32,41,50,59,68,77},{6,15,24,33,42,51,60,69,78},{7,16,25,34,43,52,61,70,79},{8,17,26,35,44,53,62,71,80},{9,18,27,36,45,54,63,72,81}};                          
@@ -34,12 +32,11 @@ LOCAL NroCasillas33:=81;
 LOCAL NroFichas33:=9;
 LOCAL Fuente33:=5;
 LOCAL Padding33:=25;
-LOCAL LimiteBiblioteca33:=50;
-LOCAL LimiteIteracionGen33:=100;
+LOCAL LimiteIteracionGen33:=10;
 LOCAL NroCasillasFijas33:=25;
 //---------------------------------------------------
 //Biblioteca de sudokus ya generados, la mayor parte del tiempo el generador 
-//de la calculadora demora demasiado (estos fueron generados con el mismo algoritmo previamente)
+//de la calculadora demora demasiado en especial con 3x3 (estos fueron generados con el mismo algoritmo previamente)
 // primer grupo 2x2, segundo grupo 2x3 tercer grupo 3x3
 LOCAL Biblioteca:={{  
        {4,2,1,3,1,3,4,2,3,4,2,1,2,1,3,4},
@@ -102,6 +99,7 @@ LOCAL LimiteBiblioteca,LimiteIteracionGen,NroCasillasFijas;
 LOCAL NroGrupos,Casillas,CasillaConocida,PosibilidadGrupo,PosibilidadCasillas,NroPosibilidadGrupo,ContadorCasillas;
 LOCAL ContadorGenerador:=0;
 //---------------------------------------------------
+//Funciones GenerarSudoku
   ConfigurarTipoSudoku();
   AlistarVariablesGenerador();
   BorrarPosibilidadGrupo(CodGrupo,FichaParaBorrar);
@@ -111,7 +109,10 @@ LOCAL ContadorGenerador:=0;
   RellenarCasillero(CodCasilla); 
   CasillaConPocasDudas(); 
   RellenarTablero();
-  GenerarSudoku();
+  ObtenerDeLaBiblioteca();
+  IntercambiarFichas();
+  GenerarSudoku();  //Se guarda el sudoku en --> Casillas 
+
   DibujarCuadro(Xinicial,Yinicial,AnchoX,AnchoY); //Dibujar para vista previa
   Grafico();
 //---------------------------------------------------
@@ -122,7 +123,15 @@ BEGIN
   GenerarSudoku();
   Grafico(); 
 END;
-//---------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//
+//  Funciones GenerarSudoku
+//
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
 EXPORT ConfigurarTipoSudoku() 
 BEGIN
   CASE
@@ -133,7 +142,6 @@ BEGIN
     NroFichas:=NroFichas22;
     Fuente:=Fuente22;
     Padding:=Padding22;
-    LimiteBiblioteca:=LimiteBiblioteca22;
     LimiteIteracionGen:=LimiteIteracionGen22;
     NroCasillasFijas:=NroCasillasFijas22;
    END;
@@ -144,7 +152,6 @@ BEGIN
     NroFichas:=NroFichas23;
     Fuente:=Fuente23;
     Padding:=Padding23;
-    LimiteBiblioteca:=LimiteBiblioteca23;
     LimiteIteracionGen:=LimiteIteracionGen23;
     NroCasillasFijas:=NroCasillasFijas23;
    END;
@@ -155,7 +162,6 @@ BEGIN
     NroFichas:=NroFichas33;
     Fuente:=Fuente33;
     Padding:=Padding33;
-    LimiteBiblioteca:=LimiteBiblioteca33;
     LimiteIteracionGen:=LimiteIteracionGen33;
     NroCasillasFijas:=NroCasillasFijas33;
    END;
@@ -296,24 +302,66 @@ BEGIN
    END;
 END;
 //---------------------------------------------------
+EXPORT  ObtenerDeLaBiblioteca()  //obtiene un sudoku aleatorio de la biblioteca
+BEGIN
+  LOCAL SubBiblioteca:=Biblioteca[TipoJuego];
+  LOCAL Dimension:=SIZE(SubBiblioteca);
+  LOCAL NroAleatorio:=RANDINT(1,Dimension);
+  Casillas:=SubBiblioteca[NroAleatorio];
+  CasillaConocida:=MAKELIST(1,X,1,NroCasillas,1);
+  LOCAL ContadorCiclo:=0;
+     WHILE ContadorCiclo<NroFichas DO
+         ContadorCiclo:=ContadorCiclo+1;
+         IntercambiarFichas();
+     END;
+END;
+//---------------------------------------------------
+EXPORT IntercambiarFichas()
+BEGIN
+  LOCAL Ficha1:=RANDINT(1,NroFichas);
+  LOCAL Ficha2:=RANDINT(1,NroFichas);
+   IF Ficha1<>Ficha2 THEN
+      LOCAL Contador:=0;
+       WHILE Contador<NroCasillas DO
+         Contador:=Contador+1;
+         LOCAL FichaAnalizada:=Casillas[Contador];
+          CASE
+            IF FichaAnalizada=Ficha1 THEN
+              Casillas[Contador]:=Ficha2;
+            END;
+            IF FichaAnalizada=Ficha2 THEN
+              Casillas[Contador]:=Ficha1;
+            END;
+          END;
+       END;
+   END;
+END;
+//---------------------------------------------------
 EXPORT GenerarSudoku()
 BEGIN
   LOCAL NumeroDeCiclos:=0; //cuenta los numeros de los ciclos que se rellena el tablero
   LOCAL NoTenemosTableroListo:=1; //todavía no tenemos el tablero
-  WHILE NoTenemosTableroListo DO
+  LOCAL SeCompletoElTablero:=0;  //variable para ver si se completo el tablero
+  //-------------
+  WHILE NumeroDeCiclos<LimiteIteracionGen  DO
     NumeroDeCiclos:=NumeroDeCiclos+1; //Contador de ciclos
     RECT_P(0,0,320,50,RGB(0,0,50),RGB(0,0,50));
     TEXTOUT_P(" [!] C:"+STRING(NumeroDeCiclos)+"...",5,10,2,RGB(255,255,255));
-    IF RellenarTablero() THEN
-       NoTenemosTableroListo:=0; //Tablero listo :) 
+    SeCompletoElTablero:=RellenarTablero(); 
+    IF SeCompletoElTablero THEN
+       NumeroDeCiclos:=LimiteIteracionGen; //Tablero listo :) 
     END;
+  END;
+  //--------------
+  IF NOT(SeCompletoElTablero) THEN
+    ObtenerDeLaBiblioteca();
   END;
   RETURN(NumeroDeCiclos); //devuelve el numero de ciclos
 END;
 //---------------------------------------------------
 EXPORT DibujarCuadro(Xinicial,Yinicial,AnchoX,AnchoY)
 BEGIN
-  RECT_P(Xinicial,Yinicial,Xinicial+AnchoX,Yinicial+AnchoY,RGB(200,200,235),RGB(200,200,235));
+  RECT_P(Xinicial,Yinicial,Xinicial+AnchoX,Yinicial+AnchoY,RGB(230,230,255),RGB(230,230,255));
 END;
 //---------------------------------------------------
 EXPORT Grafico()
