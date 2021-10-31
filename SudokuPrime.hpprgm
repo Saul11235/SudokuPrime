@@ -376,6 +376,7 @@ EXPORT Grafico()
 BEGIN
   startview(-4);
   RECT_P(0,0,350,350,RGB(255,255,190));
+  RECT_P(94,4,314,224,RGB(0,0,0),RGB(255,255,255));
   RECT_P(96,6,312,222,RGB(0,0,0),RGB(255,255,255));
     //variables inicio
       LOCAL InicioX:=105;
@@ -395,9 +396,9 @@ BEGIN
     IF TipoJuego=2 THEN
       InicioX:=110;
       InicioY:=10;
-      //DibujarCuadro(85,63,90,60);
-      //DibujarCuadro(-5,3,90,60);
-      //DibujarCuadro(-5,123,90,60);
+      DibujarCuadro(204,7,107,71);
+      DibujarCuadro(97,79,107,71);
+      DibujarCuadro(204,150,107,71);
     END;
     IF TipoJuego=3 THEN
       DibujarCuadro(97,79,72,72);
