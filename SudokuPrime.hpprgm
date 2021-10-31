@@ -13,7 +13,7 @@ LOCAL DatosCasillas22:={{1,5,9},{1,5,10},{2,5,11},{2,5,12},{1,6,9},{1,6,10},{2,6
 LOCAL NroCasillas22:=16;
 LOCAL NroFichas22:=4;
 LOCAL Fuente22:=7;
-LOCAL Padding22:=35;
+LOCAL Padding22:=54;
 LOCAL LimiteIteracionGen22:=3;
 LOCAL NroCasillasFijas22:=7;
 //TIPO2 2x3
@@ -22,7 +22,7 @@ LOCAL DatosCasillas23:={{1,7,13},{1,7,14},{1,7,15},{2,7,16},{2,7,17},{2,7,18},{1
 LOCAL NroCasillas23:=36;
 LOCAL NroFichas23:=6;
 LOCAL Fuente23:=6;
-LOCAL Padding23:=30;
+LOCAL Padding23:=36;
 LOCAL LimiteIteracionGen23:=5;
 LOCAL NroCasillasFijas23:=15;
 //TIPO2 3x3
@@ -31,7 +31,7 @@ LOCAL DatosCasillas33:={{1,10,19},{1,10,20},{1,10,21},{2,10,22},{2,10,23},{2,10,
 LOCAL NroCasillas33:=81;
 LOCAL NroFichas33:=9;
 LOCAL Fuente33:=5;
-LOCAL Padding33:=25;
+LOCAL Padding33:=24;
 LOCAL LimiteIteracionGen33:=10;
 LOCAL NroCasillasFijas33:=25;
 //---------------------------------------------------
@@ -93,7 +93,7 @@ LOCAL Biblioteca:={{
 //variables para configurar tipo de sudoku
 LOCAL DatosGrupos,DatosCasillas,NroCasillas,NroFichas,Fuente,Padding;
 //variables para ciclos y blibliotecas
-LOCAL LimiteBiblioteca,LimiteIteracionGen,NroCasillasFijas;
+LOCAL LimiteIteracionGen,NroCasillasFijas;
 //---------------------------------------------------
 //variables generadas
 LOCAL NroGrupos,Casillas,CasillaConocida,PosibilidadGrupo,PosibilidadCasillas,NroPosibilidadGrupo,ContadorCasillas;
@@ -111,6 +111,7 @@ LOCAL ContadorGenerador:=0;
   RellenarTablero();
   ObtenerDeLaBiblioteca();
   IntercambiarFichas();
+  OcultarCasillasTablero();
   GenerarSudoku();  //Se guarda el sudoku en --> Casillas 
 
   DibujarCuadro(Xinicial,Yinicial,AnchoX,AnchoY); //Dibujar para vista previa
@@ -337,6 +338,11 @@ BEGIN
    END;
 END;
 //---------------------------------------------------
+EXPORT OcultarCasillasTablero()
+BEGIN
+
+END;
+//---------------------------------------------------
 EXPORT GenerarSudoku()
 BEGIN
   LOCAL NumeroDeCiclos:=0; //cuenta los numeros de los ciclos que se rellena el tablero
@@ -356,42 +362,50 @@ BEGIN
   IF NOT(SeCompletoElTablero) THEN
     ObtenerDeLaBiblioteca();
   END;
+  //..............
+  OcultarCasillasTablero();
   RETURN(NumeroDeCiclos); //devuelve el numero de ciclos
 END;
 //---------------------------------------------------
 EXPORT DibujarCuadro(Xinicial,Yinicial,AnchoX,AnchoY)
 BEGIN
-  RECT_P(Xinicial,Yinicial,Xinicial+AnchoX,Yinicial+AnchoY,RGB(230,230,255),RGB(230,230,255));
+  RECT_P(Xinicial,Yinicial,Xinicial+AnchoX,Yinicial+AnchoY,RGB(220,220,255));
 END;
 //---------------------------------------------------
 EXPORT Grafico()
 BEGIN
   startview(-4);
-  RECT_P(0,0,350,350,RGB(250,250,250),RGB(250,250,250));
-   CASE
-    IF TipoJuego=1 THEN
-      DibujarCuadro(65,70,70,70);
-      DibujarCuadro(-5,0,70,70);
-    END;
-    IF TipoJuego=2 THEN
-      DibujarCuadro(85,63,90,60);
-      DibujarCuadro(-5,3,90,60);
-      DibujarCuadro(-5,123,90,60);
-    END;
-    IF TipoJuego=3 THEN
-      DibujarCuadro(72,5,75,75);
-      DibujarCuadro(147,80,75,75);
-      DibujarCuadro(-3,80,75,75);
-      DibujarCuadro(72,155,75,75);
-    END;
-   END;
+  RECT_P(0,0,350,350,RGB(255,255,190));
+  RECT_P(96,6,312,222,RGB(0,0,0),RGB(255,255,255));
     //variables inicio
-      LOCAL InicioX:=5;
-      LOCAL InicioY:=5;
+      LOCAL InicioX:=105;
+      LOCAL InicioY:=7;
      //contadores para ciclo
     LOCAL ContadorTotal:=0;
     LOCAL ContadorX:=0;   
     LOCAL ContadorY:=0;
+   //Personalizando para cada caso
+   CASE
+    IF TipoJuego=1 THEN
+      InicioX:=115;
+      InicioY:=18;
+      DibujarCuadro(204,7,107,107);
+      DibujarCuadro(97,114,107,107);
+    END;
+    IF TipoJuego=2 THEN
+      InicioX:=110;
+      InicioY:=10;
+      //DibujarCuadro(85,63,90,60);
+      //DibujarCuadro(-5,3,90,60);
+      //DibujarCuadro(-5,123,90,60);
+    END;
+    IF TipoJuego=3 THEN
+      DibujarCuadro(97,79,72,72);
+      DibujarCuadro(168,7,72,72);
+      DibujarCuadro(239,79,72,72);
+      DibujarCuadro(168,149,72,72);
+    END;
+   END;
     //Ciclo Dibujo
     WHILE ContadorTotal<NroCasillas DO
       LOCAL Fila:=IP(ContadorTotal/NroFichas);      
@@ -401,6 +415,7 @@ BEGIN
       LOCAL Texto:=Casillas[ContadorTotal];
       TEXTOUT_P(Texto,InicioX+Padding*Columna,InicioY+Padding*Fila,Fuente,RGB(0,0,0));
     END;
+  TEXTOUT_P("[i] https://github.com/Saul11235/SudokuPrime",1,229,1,RGB(50,50,50));
   WAIT(0);
 END;
 //--------------------------------------------------- 
