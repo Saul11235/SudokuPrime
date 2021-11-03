@@ -90,6 +90,14 @@ LOCAL Biblioteca:={{
        {4,7,6,8,2,3,1,5,9,5,2,9,1,4,6,3,7,8,1,3,8,7,9,5,4,2,6,6,1,7,4,5,2,8,9,3,8,5,4,9,3,1,2,6,7,3,9,2,6,8,7,5,1,4,7,4,1,2,6,8,9,3,5,2,8,3,5,7,9,6,4,1,9,6,5,3,1,4,7,8,2}
  }};
 //---------------------------------------------------
+//Variables de Colores
+LOCAL FONDO:=RGB(235,235,255);
+LOCAL FONDO2:=RGB(225,225,245);
+LOCAL BLANCO:=RGB(255,255,255);
+LOCAL GRIS:=RGB(50,50,50);
+LOCAL GRIS2:=RGB(200,200,200);
+LOCAL NEGRO:=RGB(0,0,0);
+//---------------------------------------------------
 //variables para configurar tipo de sudoku
 LOCAL DatosGrupos,DatosCasillas,NroCasillas,NroFichas,Fuente,Padding;
 //variables para ciclos y blibliotecas
@@ -369,17 +377,17 @@ END;
 //---------------------------------------------------
 EXPORT DibujarCuadro(Xinicial,Yinicial,AnchoX,AnchoY)
 BEGIN
-  RECT_P(Xinicial,Yinicial,Xinicial+AnchoX,Yinicial+AnchoY,RGB(220,220,255));
+  RECT_P(Xinicial,Yinicial,Xinicial+AnchoX,Yinicial+AnchoY,FONDO2);
 END;
 //---------------------------------------------------
 EXPORT Grafico()
 BEGIN
   startview(-4);
-  RECT_P(0,0,350,350,RGB(255,255,190));
-  RECT_P(94,4,314,224,RGB(0,0,0),RGB(255,255,255));
-  RECT_P(96,6,312,222,RGB(0,0,0),RGB(255,255,255));
+  RECT_P(0,0,350,350,FONDO);
+  RECT_P(94,4,314,224,NEGRO,BLANCO);
+  RECT_P(96,6,312,222,NEGRO,BLANCO);
     //variables inicio
-      LOCAL InicioX:=105;
+      LOCAL InicioX:=104; //para tipo3
       LOCAL InicioY:=7;
      //contadores para ciclo
     LOCAL ContadorTotal:=0;
@@ -392,6 +400,12 @@ BEGIN
       InicioY:=18;
       DibujarCuadro(204,7,107,107);
       DibujarCuadro(97,114,107,107);
+      LINE_P(97,60,311,60,GRIS2);
+      LINE_P(97,168,311,168,GRIS2);
+      LINE_P(150,7,150,221,GRIS2);
+      LINE_P(258,7,258,221,GRIS2);
+      LINE_P(97,114,311,114,NEGRO);
+      LINE_P(204,7,204,221,NEGRO);
     END;
     IF TipoJuego=2 THEN
       InicioX:=110;
@@ -399,12 +413,38 @@ BEGIN
       DibujarCuadro(204,7,107,71);
       DibujarCuadro(97,79,107,71);
       DibujarCuadro(204,150,107,71);
+      LINE_P(97,42,311,42,GRIS2);
+      LINE_P(97,114,311,114,GRIS2);
+      LINE_P(97,186,311,186,GRIS2);
+      LINE_P(132,7,132,221,GRIS2);
+      LINE_P(168,7,168,221,GRIS2);
+      LINE_P(240,7,240,221,GRIS2);
+      LINE_P(276,7,276,221,GRIS2);
+      LINE_P(97,150,311,150,NEGRO);
+      LINE_P(204,7,204,221,NEGRO);
+      LINE_P(97,78,311,78,NEGRO);
     END;
     IF TipoJuego=3 THEN
-      DibujarCuadro(97,79,72,72);
-      DibujarCuadro(168,7,72,72);
-      DibujarCuadro(239,79,72,72);
-      DibujarCuadro(168,149,72,72);
+      DibujarCuadro(97,79,71,71);
+      DibujarCuadro(168,7,71,71);
+      DibujarCuadro(240,79,71,71);
+      DibujarCuadro(168,150,71,71);
+      LINE_P(97,30,311,30,GRIS2);
+      LINE_P(97,54,311,54,GRIS2);
+      LINE_P(97,102,311,102,GRIS2);
+      LINE_P(97,126,311,126,GRIS2);
+      LINE_P(97,174,311,174,GRIS2);
+      LINE_P(97,198,311,198,GRIS2);
+      LINE_P(120,7,120,221,GRIS2);
+      LINE_P(144,7,144,221,GRIS2);
+      LINE_P(192,7,192,221,GRIS2);
+      LINE_P(216,7,216,221,GRIS2);
+      LINE_P(264,7,264,221,GRIS2);
+      LINE_P(288,7,288,221,GRIS2);
+      LINE_P(97,78,311,78,NEGRO);
+      LINE_P(97,150,311,150,NEGRO);
+      LINE_P(168,7,168,221,NEGRO);
+      LINE_P(240,7,240,221,NEGRO);
     END;
    END;
     //Ciclo Dibujo
@@ -414,9 +454,9 @@ BEGIN
       ContadorTotal:=ContadorTotal+1;
       //--dibujo letra
       LOCAL Texto:=Casillas[ContadorTotal];
-      TEXTOUT_P(Texto,InicioX+Padding*Columna,InicioY+Padding*Fila,Fuente,RGB(0,0,0));
+      TEXTOUT_P(Texto,InicioX+Padding*Columna,InicioY+Padding*Fila,Fuente,NEGRO);
     END;
-  TEXTOUT_P("[i] https://github.com/Saul11235/SudokuPrime",1,229,1,RGB(50,50,50));
+  TEXTOUT_P("[i] https://github.com/Saul11235/SudokuPrime",1,228,1,GRIS);
   WAIT(0);
 END;
 //--------------------------------------------------- 
