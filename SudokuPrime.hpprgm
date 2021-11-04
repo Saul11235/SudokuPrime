@@ -97,6 +97,10 @@ LOCAL BLANCO:=RGB(255,255,255);
 LOCAL GRIS:=RGB(50,50,50);
 LOCAL GRIS2:=RGB(200,200,200);
 LOCAL NEGRO:=RGB(0,0,0);
+LOCAL ROJO:=RGB(200,0,0);
+LOCAL AZUL1:=RGB(0,0,100);
+LOCAL COLORBOTON:=RGB(60,60,60);
+LOCAL COLORBOTONT:=RGB(240,240,240);
 //---------------------------------------------------
 //variables para configurar tipo de sudoku
 LOCAL DatosGrupos,DatosCasillas,NroCasillas,NroFichas,Fuente,Padding;
@@ -457,6 +461,29 @@ BEGIN
       TEXTOUT_P(Texto,InicioX+Padding*Columna,InicioY+Padding*Fila,Fuente,NEGRO);
     END;
   TEXTOUT_P("[i] https://github.com/Saul11235/SudokuPrime",1,228,1,GRIS);
+  //--------------------------------
+  RECT_P(0,0,25,25,ROJO);
+  TEXTOUT_P("X",6,-1,7,BLANCO);
+  TEXTOUT_P("Sudoku",29,2,5,AZUL1);
+    //********  BOTON TIPO SUDOKU 2x2 2x3 3x3
+  RECT_P(10,30,85,70,COLORBOTON);
+   LOCAL TEXTO:="";
+    CASE
+      IF  TipoJuego=1 THEN TEXTO:="2x2"END;
+      IF  TipoJuego=2 THEN TEXTO:="2x3"END;
+      IF  TipoJuego=3 THEN TEXTO:="3x3"END;
+    END;   
+  TEXTOUT_P(TEXTO,30,36,7,COLORBOTONT);
+    //******** BOTON NUEVO SUDOKU
+  RECT_P(10,80,85,120,COLORBOTON);
+  TEXTOUT_P(CHAR({10000,9638}),29,86,7,COLORBOTONT);
+    //******** BOTON REINICIAR
+  RECT_P(10,130,85,170,COLORBOTON);
+  TEXTOUT_P(CHAR({9638,8634}),32,136,7,COLORBOTONT);
+    //******** BOTON PISTA
+  RECT_P(10,180,85,220,COLORBOTON);
+  TEXTOUT_P(CHAR({9638,10004}),32,186,7,COLORBOTONT);
+    //******** 
   WAIT(0);
 END;
 //--------------------------------------------------- 
