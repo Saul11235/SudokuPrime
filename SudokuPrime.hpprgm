@@ -109,7 +109,7 @@ LOCAL CASILLAPISTA:=      RGB(75,0,75);
 //---------------------------------------------------
 //Variables  para control táctil
 LOCAL nuevapantalla:=0;
-LOCAL ContadorPantalla:=0;	
+LOCAL ContadorPantalla:=0;  
 LOCAL PunteroTactil:={0,0};
 LOCAL ReconocerTeclado:={};
 LOCAL LimitreConPantalla:=5000;
@@ -140,6 +140,7 @@ LOCAL EstadoCasillaParaJugar:={};  // Indica el estado
     // 2 -- CASILLA JUGADA SIN QUEJA AZUL
     // 3 -- CASILLA JUGADA CON QUEJA ROJO
     // 4 -- CASILLA DADA COMO PISTA MORADO 
+LOCAL JuegoGuardado:=0; //No guardado
 //---------------------------------------------------
 //Funciones GenerarSudoku
   ConfigurarTipoSudoku();
@@ -175,9 +176,12 @@ LOCAL EstadoCasillaParaJugar:={};  // Indica el estado
 //---------------------------------------------------
 VIEW "Sudoku",START()
 BEGIN 
-  TipoJuego:=RANDINT(1,3); //Tipo Aleatorio de Sudoku
-  ConfigurarTipoSudoku();
-  GenerarSudoku();
+  IF NOT(JuegoGuardado) THEN
+     TipoJuego:=RANDINT(1,3); //Tipo Aleatorio de Sudoku
+     ConfigurarTipoSudoku();
+     GenerarSudoku();
+     JuegoGuardado:=1; //Guardar Juego
+  END;
   Grafico(); 
 END;
 //------------------------------------------------------------------------------------------------------
@@ -614,7 +618,7 @@ END;
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
 //
-//  Funciones Táctiles	
+//  Funciones Táctiles  
 //
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
@@ -768,7 +772,13 @@ END;
 //------------------------------------------------------------------------------------------------------
 EXPORT CambiarTipoSudoku()   
 BEGIN
-  MSGBOX("CambiarTipoSudoku");
+     IF TipoJuego=3 THEN
+       TipoJuego:=1;
+     ELSE
+       TipoJuego:=TipoJuego+1;
+     END;
+     ConfigurarTipoSudoku();
+     GenerarSudoku();
 END;
 //---------------------------------------------------
 EXPORT NuevoSudoku()   
