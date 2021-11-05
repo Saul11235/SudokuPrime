@@ -101,6 +101,24 @@ LOCAL ROJO:=RGB(200,0,0);
 LOCAL AZUL1:=RGB(0,0,100);
 LOCAL COLORBOTON:=RGB(60,60,60);
 LOCAL COLORBOTONT:=RGB(240,240,240);
+//.. Colores para casillas Jugadas
+LOCAL CASILLAFIJA:=       RGB(0,0,0);
+LOCAL CASILAJUGADAOK:=    RGB(0,0,150);
+LOCAL CASILLAJUGADAERROR:=RGB(150,0,0);
+LOCAL CASILLAPISTA:=      RGB(75,0,75);
+//---------------------------------------------------
+//Variables  para control táctil
+LOCAL nuevapantalla:=0;
+LOCAL ContadorPantalla:=0;	
+LOCAL PunteroTactil:={0,0};
+LOCAL ReconocerTeclado:={};
+LOCAL LimitreConPantalla:=5000;
+LOCAL SePresionoUnatecla:=0;
+LOCAL VariableTecla:=0;
+LOCAL SeEstaApretandoBoton:=0;
+LOCAL EstaUsandoTeclado:=0;
+LOCAL PosX:=0;
+LOCAL PosY:=0;
 //---------------------------------------------------
 //variables para configurar tipo de sudoku
 LOCAL DatosGrupos,DatosCasillas,NroCasillas,NroFichas,Fuente,Padding;
@@ -110,6 +128,18 @@ LOCAL LimiteIteracionGen,NroCasillasFijas;
 //variables generadas
 LOCAL NroGrupos,Casillas,CasillaConocida,PosibilidadGrupo,PosibilidadCasillas,NroPosibilidadGrupo,ContadorCasillas;
 LOCAL ContadorGenerador:=0;
+LOCAL VictoriaJuego:=0;
+//--------------------------------------------------
+//variables para jugar NOTA TAMBIEN USAREMOS  Casillas COMO SOLUCION
+LOCAL CasillasParaJugarOriginales:={}; //ORIGINALES NO SE MODIFICAN
+LOCAL CasillasParaJugar:={}; //Casillas para Jugar, Incluye la casilla por defecto
+LOCAL CasillaConocidaParaJugar:={}; //Marca 1 sólo si se conoce el contenido de la casilla
+LOCAL EstadoCasillaParaJugar:={};  // Indica el estado 
+    // 0 -- NO SE CONOCE
+    // 1 -- CASILLA FIJA NO SE PUEDE MODIFICAR
+    // 2 -- CASILLA JUGADA SIN QUEJA AZUL
+    // 3 -- CASILLA JUGADA CON QUEJA ROJO
+    // 4 -- CASILLA DADA COMO PISTA MORADO 
 //---------------------------------------------------
 //Funciones GenerarSudoku
   ConfigurarTipoSudoku();
@@ -125,9 +155,23 @@ LOCAL ContadorGenerador:=0;
   IntercambiarFichas();
   OcultarCasillasTablero();
   GenerarSudoku();  //Se guarda el sudoku en --> Casillas 
-
+//Funciones Para dibujar
   DibujarCuadro(Xinicial,Yinicial,AnchoX,AnchoY); //Dibujar para vista previa
   Grafico();
+  PantallaOscuridad();
+//Funciones tactiles
+  SensorTactil();  
+  ValidarCoordTactil(XX1,YY1,XX2,YY2);
+  Titilar(XX1,YY1,XX2,YY2); 
+  botonera();
+//Funciones jugadas
+  CambiarTipoSudoku(); 
+  NuevoSudoku();
+  ReiniciarSudoku(); 
+  PistaSudoku();    
+  TocarCasilleroSudoku(Casillero);   
+// Funciones salir
+  SALIRJUEGO();
 //---------------------------------------------------
 VIEW "Sudoku",START()
 BEGIN 
@@ -352,18 +396,50 @@ END;
 //---------------------------------------------------
 EXPORT OcultarCasillasTablero()
 BEGIN
-
+  CasillasParaJugarOriginales:=MAKELIST(0,X,1,NroCasillas,1);
+  CasillasParaJugar:=MAKELIST(0,X,1,NroCasillas,1);
+  CasillaConocidaParaJugar:=MAKELIST(0,X,1,NroCasillas,1);
+  EstadoCasillaParaJugar:=MAKELIST(0,X,1,NroCasillas,1);
+  //----------
+  LOCAL CONTADOR:=0;  //Cuenta 
+  LOCAL VALORMINIMO:=IP(NroFichas*0.5); //para saltos random
+  LOCAL VALORMAXIMO:=IP(NroFichas*1.5); //
+  LOCAL Salto:=RANDINT(1,NroCasillas);
+  //----------
+ WHILE CONTADOR<NroCasillasFijas DO
+   //configurando salto aleatorio dentor de 1 y nro casillas
+      Salto:=Salto+RANDINT(VALORMINIMO,VALORMAXIMO);
+      LOCAL Ciclos:=IP(Salto/NroCasillas);
+      Salto:=Salto-Ciclos*NroCasillas;
+      IF Salto<1 THEN Salto:=1; END;
+      IF Salto>NroCasillas THEN Salto:=NroCasillas END;
+   //------------------------------
+   IF NOT(CasillaConocidaParaJugar[Salto]) THEN
+        CONTADOR:=CONTADOR+1;
+        CasillasParaJugarOriginales[Salto]:=Casillas[Salto];
+        CasillasParaJugar[Salto]:=Casillas[Salto];
+        CasillaConocidaParaJugar[Salto]:=1;
+        EstadoCasillaParaJugar[Salto]:=1;
+   END;
+ END;
+END;
+//---------------------------------------------------
+EXPORT PantallaOscuridad()
+BEGIN
+  RECT_P(0,0,320,240,RGB(0,0,0,100));//oscuridad
 END;
 //---------------------------------------------------
 EXPORT GenerarSudoku()
 BEGIN
+   VictoriaJuego:=0;
   LOCAL NumeroDeCiclos:=0; //cuenta los numeros de los ciclos que se rellena el tablero
   LOCAL NoTenemosTableroListo:=1; //todavía no tenemos el tablero
   LOCAL SeCompletoElTablero:=0;  //variable para ver si se completo el tablero
+  PantallaOscuridad();
   //-------------
   WHILE NumeroDeCiclos<LimiteIteracionGen  DO
     NumeroDeCiclos:=NumeroDeCiclos+1; //Contador de ciclos
-    RECT_P(0,0,320,50,RGB(0,0,50),RGB(0,0,50));
+    RECT_P(0,0,320,30,RGB(0,0,50),RGB(0,0,50));
     TEXTOUT_P(" [!] C:"+STRING(NumeroDeCiclos)+"...",5,10,2,RGB(255,255,255));
     SeCompletoElTablero:=RellenarTablero(); 
     IF SeCompletoElTablero THEN
@@ -378,7 +454,15 @@ BEGIN
   OcultarCasillasTablero();
   RETURN(NumeroDeCiclos); //devuelve el numero de ciclos
 END;
-//---------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//
+//  Funciones Dibujar
+//
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
 EXPORT DibujarCuadro(Xinicial,Yinicial,AnchoX,AnchoY)
 BEGIN
   RECT_P(Xinicial,Yinicial,Xinicial+AnchoX,Yinicial+AnchoY,FONDO2);
@@ -451,14 +535,50 @@ BEGIN
       LINE_P(240,7,240,221,NEGRO);
     END;
    END;
+
+
+//LOCAL CasillasParaJugarOriginales:={}; //ORIGINALES NO SE MODIFICAN
+//LOCAL CasillasParaJugar:={}; //Casillas para Jugar, Incluye la casilla por defecto
+//LOCAL CasillaConocidaParaJugar:={}; //Marca 1 sólo si se conoce el contenido de la casilla
+//LOCAL EstadoCasillaParaJugar:={};  // Indica el estado 
+    // 0 -- NO SE CONOCE
+    // 1 -- CASILLA FIJA NO SE PUEDE MODIFICAR
+    // 2 -- CASILLA JUGADA SIN QUEJA AZUL
+    // 3 -- CASILLA JUGADA CON QUEJA ROJO
+    // 4 -- CASILLA DADA COMO PISTA MORADO   
+//NroCasillas  81
+//LOCAL NroCasillas33:=81;
+//LOCAL NroFichas33:=9;
+//LOCAL Fuente33:=5;
+//LOCAL Padding33:=24;
+//LOCAL LimiteIteracionGen33:=10;
+//LOCAL NroCasillasFijas33:=25;
+
+//LOCAL CASILLAFIJA:=       RGB(0,0,0);
+//LOCAL CASILAJUGADAOK:=    RGB(0,0,150);
+//LOCAL CASILLAJUGADAERROR:=RGB(150,0,0);
+//LOCAL CASILLAPISTA:=      RGB(75,0,75);
+
     //Ciclo Dibujo
     WHILE ContadorTotal<NroCasillas DO
       LOCAL Fila:=IP(ContadorTotal/NroFichas);      
       LOCAL Columna:=ContadorTotal-Fila*NroFichas;
       ContadorTotal:=ContadorTotal+1;
       //--dibujo letra
-      LOCAL Texto:=Casillas[ContadorTotal];
-      TEXTOUT_P(Texto,InicioX+Padding*Columna,InicioY+Padding*Fila,Fuente,NEGRO);
+
+        IF CasillaConocidaParaJugar[ContadorTotal] THEN
+          LOCAL COLOR;
+          LOCAL INDICOLOR:=EstadoCasillaParaJugar[ContadorTotal];
+           CASE
+             IF INDICOLOR=1 THEN COLOR:=CASILLAFIJA; END;
+             IF INDICOLOR=2 THEN COLOR:=CASILAJUGADAOK; END;
+             IF INDICOLOR=3 THEN COLOR:=CASILLAJUGADAERROR; END;
+             IF INDICOLOR=4 THEN COLOR:=CASILLAPISTA; END;
+           END;     
+         LOCAL Texto:=CasillasParaJugar[ContadorTotal];
+         TEXTOUT_P(Texto,InicioX+Padding*Columna,InicioY+Padding*Fila,Fuente,COLOR);
+        END;
+
     END;
   TEXTOUT_P("[i] https://github.com/Saul11235/SudokuPrime",1,228,1,GRIS);
   //--------------------------------
@@ -481,9 +601,233 @@ BEGIN
   RECT_P(10,130,85,170,COLORBOTON);
   TEXTOUT_P(CHAR({9638,8634}),32,136,7,COLORBOTONT);
     //******** BOTON PISTA
-  RECT_P(10,180,85,220,COLORBOTON);
-  TEXTOUT_P(CHAR({9638,10004}),32,186,7,COLORBOTONT);
+  IF  NOT(VictoriaJuego) THEN
+     RECT_P(10,180,85,220,COLORBOTON);
+     TEXTOUT_P(CHAR({9638,10004}),32,186,7,COLORBOTONT);
+  ELSE
+     TEXTOUT_P("OK!",32,186,7,AZUL1);
+  END;
     //******** 
-  WAIT(0);
+  botonera();// <--- LLAMA A FUNCION DE BOTONERAS 
 END;
-//--------------------------------------------------- 
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//
+//  Funciones Táctiles	
+//
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+EXPORT SensorTactil()  // DOC Congela la pantalla hasta que alguien la toca, guarda coord en PosX y PosY
+BEGIN                  // Codigo Reutilizado Viejos Programas
+WAIT(0.005);
+ //--- MODULOS DE GUARDAR PANTALLAS
+ IF nuevapantalla THEN
+    nuevapantalla:=0;
+    ContadorPantalla:=0;
+ ELSE
+    ContadorPantalla:=ContadorPantalla+1;
+      IF ContadorPantalla>LimitreConPantalla THEN ContadorPantalla:=0; Startview(-4); SALIRJUEGO() ; END;
+ END;
+ //--------------------------------
+  //     VariableTecla:=0;  //esta es una variable de una tecla que se activará
+  //     SePresionoUnatecla:=0;
+  IF NOT(GETKEY==-1) THEN   
+    //se ha presionado una tecla
+    //    IF SeEstaApretandoBoton THEN
+    //        RETURN(0);
+    //   ELSE
+     SePresionoUnatecla:=0; //por defecto poner no se presiono una tecla
+      LOCAL CONTATECLA:=0;
+      LOCAL LIMITETECLA:=50;
+       WHILE  LIMITETECLA>CONTATECLA DO
+         CONTATECLA:=CONTATECLA+1; //rellena contador
+         IF ISKEYDOWN(CONTATECLA) 
+          THEN    
+            SePresionoUnatecla:=1;
+            VariableTecla:=CONTATECLA; 
+            CONTATECLA:=51;
+            WAIT(0.05);
+          END;                   
+        END;
+      //    END;
+  ELSE   
+    SePresionoUnatecla:=0;
+    PunteroTactil:=B→R(MOUSE());
+    PunteroTactil:=PunteroTactil(1);
+     IF SIZE(PunteroTactil)=0  OR NOT(GETKEY==-1 )
+     THEN
+        IF NOT(SeEstaApretandoBoton) 
+         THEN
+          WAIT(0.0001);  //si no detecta ninguna señal vuelve a activar  el sensor 
+          SensorTactil();
+         END;
+     ELSE 
+        PosX:=PunteroTactil(1);
+        PosY:=PunteroTactil(2); 
+     END;
+  END; 
+END;
+//---------------------------------------------------
+EXPORT ValidarCoordTactil(XX1,YY1,XX2,YY2)  //Respecto a las corrdenadas 
+BEGIN
+LOCAL XMIN, XMAX, YMIN, YMAX;
+  IF XX1<XX2 THEN
+    XMIN:=XX1;
+    XMAX:=XX2;
+  ELSE
+    XMIN:=XX2;
+    XMAX:=XX1;
+  END;
+  IF YY1<YY2 THEN
+    YMIN:=YY1;
+    YMAX:=YY2;
+  ELSE
+    YMIN:=YY2;
+    YMAX:=YY1;
+  END;
+//COMPARAR CON PosX Y PosY
+  IF ( (PosX<XMAX) AND (PosX>XMIN) ) AND ( (PosY<YMAX) AND (PosY>YMIN)) THEN
+       ReconocerTeclado:=PunteroTactil; //<--- ELIMINAR SI NO ES NECESARIO
+       PunteroTactil:={0,0,0,0};PosX:=0;PosY:=0;
+       nuevapantalla:=1; EstaUsandoTeclado:=0;
+       RETURN 1;
+  ELSE
+       RETURN 0;
+  END;
+END;
+//---------------------------------------------------
+EXPORT Titilar(XX1,YY1,XX2,YY2)
+BEGIN
+  RECT_P(XX1+2,YY1+2,XX2-2,YY2-2,RGB(0,0,0));
+  WAIT(0.03);
+  RECT_P(XX1+2,YY1+2,XX2-2,YY2-2,RGB(255,255,255));
+  WAIT(0.02);
+  RECT_P(XX1+2,YY1+2,XX2-2,YY2-2,RGB(0,0,0));
+  WAIT(0.02);
+  RECT_P(XX1+2,YY1+2,XX2-2,YY2-2,RGB(255,255,255));
+  WAIT(0.03);
+  RECT_P(XX1+2,YY1+2,XX2-2,YY2-2,RGB(0,0,0));
+  WAIT(0.02);
+END;
+//---------------------------------------------------
+EXPORT botonera()   
+BEGIN
+ SensorTactil();
+  CASE
+    IF ValidarCoordTactil(0,0,25,25) THEN
+      //Funcion Boton Cerrar Sudoku
+      Titilar(0,0,25,25);
+      SALIRJUEGO();
+    END;
+    IF ValidarCoordTactil(10,30,85,70) THEN
+      //Funcion Boton Cerrar Sudoku
+      Titilar(10,30,85,70);
+      CambiarTipoSudoku() ;
+    END;
+    IF ValidarCoordTactil(10,80,85,120) THEN
+      //Funcion Boton NUEVO Sudoku
+      Titilar(10,80,85,120);
+      NuevoSudoku();
+    END;
+    IF ValidarCoordTactil(10,130,85,170) THEN
+      //Funcion Boton reiniciar Sudoku
+      Titilar(10,130,85,170);
+      ReiniciarSudoku();
+    END;
+    IF ValidarCoordTactil(10,180,85,220) THEN
+      //Funcion Boton Pista
+       IF NOT(SeEstaApretandoBoton)  THEN
+         Titilar(10,180,85,220);
+         PistaSudoku();
+       END;
+    END;
+     //---------
+     IF ValidarCoordTactil(96,6,312,222) THEN
+       //Funcion Boton reiniciar Sudoku
+       LOCAL DimensionCelda:=216/NroFichas;
+       LOCAL DimensionX:=IP((ReconocerTeclado[1]-96)/DimensionCelda)+1;
+       LOCAL DimensionY:=IP((ReconocerTeclado[2]-6)/DimensionCelda);
+       LOCAL CeldaSeleccionada:=DimensionX+DimensionY*NroFichas;
+       TocarCasilleroSudoku(CeldaSeleccionada);
+     END;
+     //---------
+    botonera();  
+  END;
+  Grafico();
+END;
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//
+//  Funciones jugadas
+//
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+EXPORT CambiarTipoSudoku()   
+BEGIN
+  MSGBOX("CambiarTipoSudoku");
+END;
+//---------------------------------------------------
+EXPORT NuevoSudoku()   
+BEGIN
+  GenerarSudoku();
+END;
+//---------------------------------------------------
+EXPORT ReiniciarSudoku()   
+BEGIN
+  MSGBOX("ReiniciarSudoku");
+END;
+//---------------------------------------------------
+EXPORT PistaSudoku()   
+BEGIN
+  MSGBOX("PistaSudoku");
+END;
+//---------------------------------------------------
+EXPORT TocarCasilleroSudoku(Casillero)   
+BEGIN
+
+   LOCAL DimensionCelda:=216/NroFichas;
+   LOCAL DimensionX:=IP((ReconocerTeclado[1]-96)/DimensionCelda);
+   LOCAL DimensionY:=IP((ReconocerTeclado[2]-6)/DimensionCelda);
+   Titilar(96+DimensionX*DimensionCelda,6+DimensionY*DimensionCelda,96+(DimensionX+1)*(DimensionCelda),6+(DimensionY+1)*DimensionCelda);
+   MSGBOX("Casillero Tocado"+Casillero);
+END;
+
+
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//
+//  Funciones salir
+//
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+
+EXPORT SALIRJUEGO()   
+BEGIN
+  ContadorPantalla:=0;
+  RECT_P(0,0,320,240,NEGRO);
+  TEXTOUT_P("Bye bye - Adios - Ciao ",29,86,7,COLORBOTONT);
+  WAIT(0.6);
+  KILL;
+END;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
