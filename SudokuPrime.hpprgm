@@ -173,11 +173,15 @@ LOCAL JuegoGuardado:=0; //No guardado
   TocarCasilleroSudoku(Casillero);   
 // Funciones salir
   SALIRJUEGO();
+  PantallaInicial();
 // Jugar sistema
   JugarSistema(Casilla,Jugada);
+  RevisarCasillasJugadas();
 //---------------------------------------------------
 VIEW "Sudoku",START()
 BEGIN 
+  PantallaInicial();
+  WAIT(0.5); 
   IF NOT(JuegoGuardado) THEN
      TipoJuego:=RANDINT(1,3); //Tipo Aleatorio de Sudoku
      ConfigurarTipoSudoku();
@@ -826,16 +830,43 @@ END;
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
-
 EXPORT SALIRJUEGO()   
 BEGIN
   ContadorPantalla:=0;
   RECT_P(0,0,320,240,NEGRO);
-  TEXTOUT_P("Bye bye - Adios - Ciao ",29,86,7,COLORBOTONT);
+  PantallaInicial();  
   WAIT(0.6);
   KILL;
 END;
-
+//---------------------------------------------------
+EXPORT PantallaInicial()   
+BEGIN
+  ContadorPantalla:=0;  // pantalla de incio y salida muestra un cuadro aleatorio
+  RECT_P(0,0,320,240,NEGRO);
+  RECT_P(50,80,110,140,BLANCO,NEGRO);
+  LOCAL ListaTexto:={"","","","","","","","",""};
+   LINE_P(70,80,70,140,BLANCO);
+   LINE_P(90,80,90,140,BLANCO);
+   LINE_P(50,100,110,100,BLANCO);
+   LINE_P(50,120,110,120,BLANCO);
+  LOCAL contador:=0;
+  WHILE contador<9 DO
+    contador:=contador+1;
+    LOCAL PosicionAleatoria:=RANDINT(1,9);
+    ListaTexto[PosicionAleatoria]:=contador;
+  END;
+   TEXTOUT_P(ListaTexto[1],58,85,2,BLANCO);
+   TEXTOUT_P(ListaTexto[2],78,85,2,BLANCO);
+   TEXTOUT_P(ListaTexto[3],98,85,2,BLANCO);
+   TEXTOUT_P(ListaTexto[4],58,105,2,BLANCO);
+   TEXTOUT_P(ListaTexto[5],78,105,2,BLANCO);
+   TEXTOUT_P(ListaTexto[6],98,105,2,BLANCO);
+   TEXTOUT_P(ListaTexto[7],58,125,2,BLANCO);
+   TEXTOUT_P(ListaTexto[8],78,125,2,BLANCO);
+   TEXTOUT_P(ListaTexto[9],98,125,2,BLANCO);
+  TEXTOUT_P("Sudoku Prime",125,95,7,BLANCO);
+  TEXTOUT_P("[i] https://github.com/Saul11235/SudokuPrime",33,220,2,COLORBOTONT);
+END;
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
@@ -859,8 +890,13 @@ BEGIN
   CasillasParaJugar[Casilla]:=JugadaCorregida;//Casillas para Jugar, Incluye la casilla por defecto
   CasillaConocidaParaJugar[Casilla]:=1;       //Marca 1 sólo si se conoce el contenido de la casilla
   EstadoCasillaParaJugar[Casilla]:=2;         // Indica el estado 2 Jugada ok
+  RevisarCasillasJugadas(); 
 END;
-
+//---------------------------------------------------
+EXPORT RevisarCasillasJugadas( ) //Jugada que altera todas las variables en el sistema 
+BEGIN
+ 
+END;
 
 
 
