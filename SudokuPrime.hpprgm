@@ -173,6 +173,8 @@ LOCAL JuegoGuardado:=0; //No guardado
   TocarCasilleroSudoku(Casillero);   
 // Funciones salir
   SALIRJUEGO();
+// Jugar sistema
+  JugarSistema(Casilla,Jugada);
 //---------------------------------------------------
 VIEW "Sudoku",START()
 BEGIN 
@@ -803,7 +805,15 @@ BEGIN
    LOCAL DimensionX:=IP((ReconocerTeclado[1]-96)/DimensionCelda);
    LOCAL DimensionY:=IP((ReconocerTeclado[2]-6)/DimensionCelda);
    Titilar(96+DimensionX*DimensionCelda,6+DimensionY*DimensionCelda,96+(DimensionX+1)*(DimensionCelda),6+(DimensionY+1)*DimensionCelda);
-   MSGBOX("Casillero Tocado"+Casillero);
+   //----------------
+   IF NOT(EstadoCasillaParaJugar[Casillero]=1) THEN
+      LOCAL VariableJuego:=CasillasParaJugar[Casillero];
+      LOCAL Switch:=INPUT(VariableJuego,"Jugar");
+       IF Switch THEN  
+         JugarSistema(Casillero,VariableJuego); 
+       END;
+   END;
+   //
 END;
 
 
@@ -824,6 +834,31 @@ BEGIN
   TEXTOUT_P("Bye bye - Adios - Ciao ",29,86,7,COLORBOTONT);
   WAIT(0.6);
   KILL;
+END;
+
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//
+//  Funciones jugar en el sistema
+//
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------
+
+EXPORT JugarSistema(Casilla,Jugada) //Jugada que altera todas las variables en el sistema 
+BEGIN
+  LOCAL JugadaCorregida;
+  JugadaCorregida:=IP(ABS(Jugada));
+  IF JugadaCorregida<1 THEN
+     JugadaCorregida:=1;
+  END;
+  IF JugadaCorregida>NroFichas THEN
+     JugadaCorregida:=NroFichas;
+  END;
+  CasillasParaJugar[Casilla]:=JugadaCorregida;//Casillas para Jugar, Incluye la casilla por defecto
+  CasillaConocidaParaJugar[Casilla]:=1;       //Marca 1 sólo si se conoce el contenido de la casilla
+  EstadoCasillaParaJugar[Casilla]:=2;         // Indica el estado 2 Jugada ok
 END;
 
 
