@@ -129,6 +129,7 @@ LOCAL LimiteIteracionGen,NroCasillasFijas;
 LOCAL NroGrupos,Casillas,CasillaConocida,PosibilidadGrupo,PosibilidadCasillas,NroPosibilidadGrupo,ContadorCasillas;
 LOCAL ContadorGenerador:=0;
 LOCAL VictoriaJuego:=0;
+LOCAL SudokuNuevo:=0;
 //--------------------------------------------------
 //variables para jugar NOTA TAMBIEN USAREMOS  Casillas COMO SOLUCION
 LOCAL CasillasParaJugarOriginales:={}; //ORIGINALES NO SE MODIFICAN
@@ -169,6 +170,7 @@ LOCAL JuegoGuardado:=0; //No guardado
   CambiarTipoSudoku(); 
   NuevoSudoku();
   ReiniciarSudoku(); 
+  SolucionTotalSudoku();
   PistaSudoku();    
   TocarCasilleroSudoku(Casillero);   
 // Funciones salir
@@ -442,6 +444,7 @@ END;
 EXPORT GenerarSudoku()
 BEGIN
    VictoriaJuego:=0;
+   SudokuNuevo:=1;
   LOCAL NumeroDeCiclos:=0; //cuenta los numeros de los ciclos que se rellena el tablero
   LOCAL NoTenemosTableroListo:=1; //todavía no tenemos el tablero
   LOCAL SeCompletoElTablero:=0;  //variable para ver si se completo el tablero
@@ -596,24 +599,28 @@ BEGIN
   TEXTOUT_P("X",6,-1,7,BLANCO);
   TEXTOUT_P("Sudoku",29,2,5,AZUL1);
     //********  BOTON TIPO SUDOKU 2x2 2x3 3x3
-  RECT_P(10,30,85,70,COLORBOTON);
+  RECT_P(10,30,85,64,COLORBOTON);
    LOCAL TEXTO:="";
     CASE
       IF  TipoJuego=1 THEN TEXTO:="2x2"END;
       IF  TipoJuego=2 THEN TEXTO:="2x3"END;
       IF  TipoJuego=3 THEN TEXTO:="3x3"END;
     END;   
-  TEXTOUT_P(TEXTO,30,36,7,COLORBOTONT);
+  TEXTOUT_P(TEXTO,30,34,7,COLORBOTONT);
     //******** BOTON NUEVO SUDOKU
-  RECT_P(10,80,85,120,COLORBOTON);
-  TEXTOUT_P(CHAR({10000,9638}),29,86,7,COLORBOTONT);
+    RECT_P(10,69,85,103,COLORBOTON);
+    TEXTOUT_P(CHAR({10000,9638}),29,73,7,COLORBOTONT);
     //******** BOTON REINICIAR
-  RECT_P(10,130,85,170,COLORBOTON);
-  TEXTOUT_P(CHAR({9638,8634}),32,136,7,COLORBOTONT);
+  IF NOT(SudokuNuevo) THEN
+   RECT_P(10,108,85,142,COLORBOTON);
+   TEXTOUT_P(CHAR({9638,8634}),32,112,7,COLORBOTONT);
+  END;
     //******** BOTON PISTA
   IF  NOT(VictoriaJuego) THEN
-     RECT_P(10,180,85,220,COLORBOTON);
-     TEXTOUT_P(CHAR({9638,10004}),32,186,7,COLORBOTONT);
+     RECT_P(10,147,85,181,COLORBOTON); //Boton resolver todo
+     RECT_P(10,186,85,220,COLORBOTON); //boton Pista
+     TEXTOUT_P(CHAR({9638,10004,10004}),23,151,7,COLORBOTONT);
+     TEXTOUT_P(CHAR({9638,10004}),32,190,7,COLORBOTONT);
   ELSE
      TEXTOUT_P("OK!",32,186,7,AZUL1);
   END;
@@ -731,25 +738,34 @@ BEGIN
       Titilar(0,0,25,25);
       SALIRJUEGO();
     END;
-    IF ValidarCoordTactil(10,30,85,70) THEN
+    IF ValidarCoordTactil(10,30,85,64) THEN
       //Funcion Boton Cerrar Sudoku
-      Titilar(10,30,85,70);
+      Titilar(10,30,85,64);
       CambiarTipoSudoku() ;
     END;
-    IF ValidarCoordTactil(10,80,85,120) THEN
+    IF ValidarCoordTactil(10,69,85,103) THEN
       //Funcion Boton NUEVO Sudoku
-      Titilar(10,80,85,120);
+      Titilar(10,69,85,103);
       NuevoSudoku();
     END;
-    IF ValidarCoordTactil(10,130,85,170) THEN
+    IF ValidarCoordTactil(10,108,85,142) THEN
       //Funcion Boton reiniciar Sudoku
-      Titilar(10,130,85,170);
-      ReiniciarSudoku();
+      IF NOT(SudokuNuevo) THEN
+       Titilar(10,108,85,142);
+       ReiniciarSudoku();
+      END;
     END;
-    IF ValidarCoordTactil(10,180,85,220) THEN
+    IF ValidarCoordTactil(10,147,85,181) THEN
       //Funcion Boton Pista
        IF NOT(SeEstaApretandoBoton)  THEN
-         Titilar(10,180,85,220);
+         Titilar(10,147,85,181);
+         SolucionTotalSudoku();
+       END;
+    END;
+    IF ValidarCoordTactil(10,186,85,220) THEN
+      //Funcion Boton Pista
+       IF NOT(SeEstaApretandoBoton)  THEN
+         Titilar(10,186,85,220);
          PistaSudoku();
        END;
     END;
@@ -790,11 +806,17 @@ END;
 EXPORT NuevoSudoku()   
 BEGIN
   GenerarSudoku();
+  WAIT(0.5);
 END;
 //---------------------------------------------------
 EXPORT ReiniciarSudoku()   
 BEGIN
   MSGBOX("ReiniciarSudoku");
+END;
+//---------------------------------------------------
+EXPORT SolucionTotalSudoku()   
+BEGIN
+  MSGBOX("SolucionTotal");
 END;
 //---------------------------------------------------
 EXPORT PistaSudoku()   
@@ -890,6 +912,7 @@ BEGIN
   CasillasParaJugar[Casilla]:=JugadaCorregida;//Casillas para Jugar, Incluye la casilla por defecto
   CasillaConocidaParaJugar[Casilla]:=1;       //Marca 1 sólo si se conoce el contenido de la casilla
   EstadoCasillaParaJugar[Casilla]:=2;         // Indica el estado 2 Jugada ok
+  SudokuNuevo:=0;
   RevisarCasillasJugadas(); 
 END;
 //---------------------------------------------------
