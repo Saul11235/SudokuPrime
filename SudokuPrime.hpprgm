@@ -127,6 +127,7 @@ LOCAL LimiteIteracionGen,NroCasillasFijas;
 //---------------------------------------------------
 //variables generadas
 LOCAL NroGrupos,Casillas,CasillaConocida,PosibilidadGrupo,PosibilidadCasillas,NroPosibilidadGrupo,ContadorCasillas;
+LOCAL Solucion; //<- variable para almacenar 
 LOCAL ContadorGenerador:=0;
 LOCAL VictoriaJuego:=0;
 LOCAL SudokuNuevo:=0;
@@ -463,6 +464,7 @@ BEGIN
   IF NOT(SeCompletoElTablero) THEN
     ObtenerDeLaBiblioteca();
   END;
+  Solucion:=Casillas; //copiar variable casillas
   //..............
   OcultarCasillasTablero();
   RETURN(NumeroDeCiclos); //devuelve el numero de ciclos
@@ -757,14 +759,14 @@ BEGIN
     END;
     IF ValidarCoordTactil(10,147,85,181) THEN
       //Funcion Boton Pista
-       IF NOT(SeEstaApretandoBoton)  THEN
+       IF NOT(VictoriaJuego)  THEN
          Titilar(10,147,85,181);
          SolucionTotalSudoku();
        END;
     END;
     IF ValidarCoordTactil(10,186,85,220) THEN
       //Funcion Boton Pista
-       IF NOT(SeEstaApretandoBoton)  THEN
+       IF NOT(VictoriaJuego)  THEN
          Titilar(10,186,85,220);
          PistaSudoku();
        END;
@@ -806,17 +808,50 @@ END;
 EXPORT NuevoSudoku()   
 BEGIN
   GenerarSudoku();
-  WAIT(0.5);
+  WAIT(0.1);
 END;
 //---------------------------------------------------
 EXPORT ReiniciarSudoku()   
 BEGIN
-  MSGBOX("ReiniciarSudoku");
+//LOCAL CasillasParaJugarOriginales:={}; //ORIGINALES NO SE MODIFICAN
+//LOCAL CasillasParaJugar:={}; //Casillas para Jugar, Incluye la casilla por defecto
+//LOCAL CasillaConocidaParaJugar:={}; //Marca 1 sólo si se conoce el contenido de la casilla
+//LOCAL EstadoCasillaParaJugar:={};  // Indica el estado 
+    // 0 -- NO SE CONOCE
+    // 1 -- CASILLA FIJA NO SE PUEDE MODIFICAR
+    // 2 -- CASILLA JUGADA SIN QUEJA AZUL
+    // 3 -- CASILLA JUGADA CON QUEJA ROJO
+    // 4 -- CASILLA DADA COMO PISTA MORADO   
+  CasillasParaJugar:=CasillasParaJugarOriginales;
+  LOCAL CONTADOR:=0;
+   WHILE CONTADOR<NroCasillas DO
+     CONTADOR:=CONTADOR+1;
+      IF  CasillasParaJugar[CONTADOR] THEN
+         CasillaConocidaParaJugar[CONTADOR]:=1;
+         EstadoCasillaParaJugar[CONTADOR]:=1;
+      ELSE
+         CasillaConocidaParaJugar[CONTADOR]:=0;
+         EstadoCasillaParaJugar[CONTADOR]:=0;
+      END;
+   END;
+   SudokuNuevo:=1;
+   VictoriaJuego:=0;
 END;
 //---------------------------------------------------
 EXPORT SolucionTotalSudoku()   
-BEGIN
-  MSGBOX("SolucionTotal");
+BEGIN 
+  CasillasParaJugar:=CasillasParaJugarOriginales;
+  VictoriaJuego:=1; 
+  SudokuNuevo:=0;
+  LOCAL CONTADOR:=0;
+   WHILE CONTADOR<NroCasillas DO
+     CONTADOR:=CONTADOR+1;
+      IF  NOT(CasillasParaJugar[CONTADOR]) THEN
+         CasillasParaJugar[CONTADOR]:=Solucion[CONTADOR];
+         CasillaConocidaParaJugar[CONTADOR]:=1;
+         EstadoCasillaParaJugar[CONTADOR]:=4;
+      END;
+   END;
 END;
 //---------------------------------------------------
 EXPORT PistaSudoku()   
@@ -826,7 +861,6 @@ END;
 //---------------------------------------------------
 EXPORT TocarCasilleroSudoku(Casillero)   
 BEGIN
-
    LOCAL DimensionCelda:=216/NroFichas;
    LOCAL DimensionX:=IP((ReconocerTeclado[1]-96)/DimensionCelda);
    LOCAL DimensionY:=IP((ReconocerTeclado[2]-6)/DimensionCelda);
@@ -841,8 +875,6 @@ BEGIN
    END;
    //
 END;
-
-
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
