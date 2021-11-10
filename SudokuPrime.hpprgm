@@ -840,16 +840,22 @@ END;
 //---------------------------------------------------
 EXPORT SolucionTotalSudoku()   
 BEGIN 
-  CasillasParaJugar:=CasillasParaJugarOriginales;
+  //CasillasParaJugar:=CasillasParaJugarOriginales;
   VictoriaJuego:=1; 
   SudokuNuevo:=0;
   LOCAL CONTADOR:=0;
    WHILE CONTADOR<NroCasillas DO
      CONTADOR:=CONTADOR+1;
-      IF  NOT(CasillasParaJugar[CONTADOR]) THEN
-         CasillasParaJugar[CONTADOR]:=Solucion[CONTADOR];
-         CasillaConocidaParaJugar[CONTADOR]:=1;
-         EstadoCasillaParaJugar[CONTADOR]:=4;
+      IF  NOT(CasillasParaJugarOriginales[CONTADOR]) THEN
+         IF Solucion[CONTADOR]= CasillasParaJugar[CONTADOR] THEN
+            //Jugada ok
+            EstadoCasillaParaJugar[CONTADOR]:=2;
+            CasillaConocidaParaJugar[CONTADOR]:=1;
+         ELSE
+           CasillasParaJugar[CONTADOR]:=Solucion[CONTADOR];
+           CasillaConocidaParaJugar[CONTADOR]:=1;
+           EstadoCasillaParaJugar[CONTADOR]:=4;
+         END;        
       END;
    END;
 END;
