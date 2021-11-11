@@ -791,16 +791,7 @@ BEGIN
 END;
 //---------------------------------------------------
 EXPORT ReiniciarSudoku()   
-BEGIN
-//LOCAL CasillasParaJugarOriginales:={}; //ORIGINALES NO SE MODIFICAN
-//LOCAL CasillasParaJugar:={}; //Casillas para Jugar, Incluye la casilla por defecto
-//LOCAL CasillaConocidaParaJugar:={}; //Marca 1 sólo si se conoce el contenido de la casilla
-//LOCAL EstadoCasillaParaJugar:={};  // Indica el estado 
-    // 0 -- NO SE CONOCE
-    // 1 -- CASILLA FIJA NO SE PUEDE MODIFICAR
-    // 2 -- CASILLA JUGADA SIN QUEJA AZUL
-    // 3 -- CASILLA JUGADA CON QUEJA ROJO
-    // 4 -- CASILLA DADA COMO PISTA MORADO   
+BEGIN 
   CasillasParaJugar:=CasillasParaJugarOriginales;
   LOCAL CONTADOR:=0;
    WHILE CONTADOR<NroCasillas DO
@@ -841,7 +832,54 @@ END;
 //---------------------------------------------------
 EXPORT PistaSudoku()   
 BEGIN
-  MSGBOX("PistaSudoku");
+  SudokuNuevo:=0;
+  LOCAL Contador:=0; //contador para switch
+  LOCAL ListaVacios:={}; //Se almacenara 
+  LOCAL ListaErrores:={}; //Se almacenará las casillas con errores
+  LOCAL LimiteIteracion:=SIZE(EstadoCasillaParaJugar);
+    WHILE Contador<LimiteIteracion DO
+      Contador:=Contador+1;
+      LOCAL ValorCasilla:=EstadoCasillaParaJugar[Contador];
+        IF ValorCasilla=0  THEN
+            ListaVacios:=CONCAT(ListaVacios,{Contador});
+        END;
+        IF ValorCasilla=3  THEN
+            ListaErrores:=CONCAT(ListaErrores,{Contador});
+        END;
+    END;
+   //-----------------------
+  LOCAL ListaParaCasillaPista;
+  IF NOT(SIZE(ListaVacios)) THEN
+      ListaParaCasillaPista:=ListaErrores;
+  ELSE
+      ListaParaCasillaPista:=ListaVacios;
+  END;
+  //-------------------------
+  LOCAL PosicionAleatoria:=RANDINT(1,SIZE(ListaParaCasillaPista));
+  LOCAL CasillaPista:=ListaParaCasillaPista[PosicionAleatoria];
+  //-------------------------
+  CasillasParaJugar[CasillaPista]:=Solucion[CasillaPista];
+  CasillaConocidaParaJugar[CasillaPista]:=1;
+  EstadoCasillaParaJugar[CasillaPista]:=4;
+
+
+//LOCAL CasillasParaJugarOriginales:={}; //ORIGINALES NO SE MODIFICAN
+//LOCAL CasillasParaJugar:={}; //Casillas para Jugar, Incluye la casilla por defecto
+//LOCAL CasillaConocidaParaJugar:={}; //Marca 1 sólo si se conoce el contenido de la casilla
+//LOCAL EstadoCasillaParaJugar:={};  // Indica el estado 
+    // 0 -- NO SE CONOCE
+    // 1 -- CASILLA FIJA NO SE PUEDE MODIFICAR
+    // 2 -- CASILLA JUGADA SIN QUEJA AZUL
+    // 3 -- CASILLA JUGADA CON QUEJA ROJO
+    // 4 -- CASILLA DADA COMO PISTA MORADO   
+//NroCasillas  81
+//LOCAL NroCasillas33:=81;
+//LOCAL NroFichas33:=9;
+//LOCAL Fuente33:=5;
+//LOCAL Padding33:=24;
+//LOCAL LimiteIteracionGen33:=10;
+//LOCAL NroCasillasFijas33:=25;
+  RevisarCasillasJugadas();
 END;
 //---------------------------------------------------
 EXPORT TocarCasilleroSudoku(Casillero)   
@@ -936,31 +974,6 @@ END;
 //---------------------------------------------------
 EXPORT RevisarCasillasJugadas( ) //Jugada que altera todas las variables en el sistema 
 BEGIN
- 
-
-
-
-//LOCAL CasillasParaJugarOriginales:={}; //ORIGINALES NO SE MODIFICAN
-//LOCAL CasillasParaJugar:={}; //Casillas para Jugar, Incluye la casilla por defecto
-//LOCAL CasillaConocidaParaJugar:={}; //Marca 1 sólo si se conoce el contenido de la casilla
-//LOCAL EstadoCasillaParaJugar:={};  // Indica el estado 
-    // 0 -- NO SE CONOCE
-    // 1 -- CASILLA FIJA NO SE PUEDE MODIFICAR
-    // 2 -- CASILLA JUGADA SIN QUEJA AZUL
-    // 3 -- CASILLA JUGADA CON QUEJA ROJO
-    // 4 -- CASILLA DADA COMO PISTA MORADO   
-//NroCasillas  81
-//LOCAL NroCasillas33:=81;
-//LOCAL NroFichas33:=9;
-//LOCAL Fuente33:=5;
-//LOCAL Padding33:=24;
-//LOCAL LimiteIteracionGen33:=10;
-//LOCAL NroCasillasFijas33:=25;
-
-//LOCAL CASILLAFIJA:=       RGB(0,0,0);
-//LOCAL CASILAJUGADAOK:=    RGB(0,0,150);
-//LOCAL CASILLAJUGADAERROR:=RGB(150,0,0);
-//LOCAL CASILLAPISTA:=      RGB(75,0,75);
  LOCAL CONTADORR:=0;
  LOCAL GruposLlenos:=0; //Cuenta el numero de grupos 
  LOCAL SumaDeCadaGrupo;
