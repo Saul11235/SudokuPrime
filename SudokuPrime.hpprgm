@@ -103,9 +103,9 @@ LOCAL COLORBOTON:=RGB(60,60,60);
 LOCAL COLORBOTONT:=RGB(240,240,240);
 //.. Colores para casillas Jugadas
 LOCAL CASILLAFIJA:=       RGB(0,0,0);
-LOCAL CASILAJUGADAOK:=    RGB(0,0,150);
-LOCAL CASILLAJUGADAERROR:=RGB(150,0,0);
-LOCAL CASILLAPISTA:=      RGB(75,0,75);
+LOCAL CASILAJUGADAOK:=    RGB(0,0,250);
+LOCAL CASILLAJUGADAERROR:=RGB(250,0,0);
+LOCAL CASILLAPISTA:=      RGB(0,200,0);
 //---------------------------------------------------
 //Variables  para control táctil
 LOCAL nuevapantalla:=0;
@@ -180,6 +180,7 @@ LOCAL JuegoGuardado:=0; //No guardado
 // Jugar sistema
   JugarSistema(Casilla,Jugada);
   RevisarCasillasJugadas();
+  AnalizarRepetidosEnCasilla(CasillasParaAnalizar);
 //---------------------------------------------------
 VIEW "Sudoku",START()
 BEGIN 
@@ -550,30 +551,6 @@ BEGIN
       LINE_P(G1,240,7,240,221,NEGRO);
     END;
    END;
-
-
-//LOCAL CasillasParaJugarOriginales:={}; //ORIGINALES NO SE MODIFICAN
-//LOCAL CasillasParaJugar:={}; //Casillas para Jugar, Incluye la casilla por defecto
-//LOCAL CasillaConocidaParaJugar:={}; //Marca 1 sólo si se conoce el contenido de la casilla
-//LOCAL EstadoCasillaParaJugar:={};  // Indica el estado 
-    // 0 -- NO SE CONOCE
-    // 1 -- CASILLA FIJA NO SE PUEDE MODIFICAR
-    // 2 -- CASILLA JUGADA SIN QUEJA AZUL
-    // 3 -- CASILLA JUGADA CON QUEJA ROJO
-    // 4 -- CASILLA DADA COMO PISTA MORADO   
-//NroCasillas  81
-//LOCAL NroCasillas33:=81;
-//LOCAL NroFichas33:=9;
-//LOCAL Fuente33:=5;
-//LOCAL Padding33:=24;
-//LOCAL LimiteIteracionGen33:=10;
-//LOCAL NroCasillasFijas33:=25;
-
-//LOCAL CASILLAFIJA:=       RGB(0,0,0);
-//LOCAL CASILAJUGADAOK:=    RGB(0,0,150);
-//LOCAL CASILLAJUGADAERROR:=RGB(150,0,0);
-//LOCAL CASILLAPISTA:=      RGB(75,0,75);
-
     //Ciclo Dibujo
     WHILE ContadorTotal<NroCasillas DO
       LOCAL Fila:=IP(ContadorTotal/NroFichas);      
@@ -874,7 +851,8 @@ BEGIN
    LOCAL DimensionY:=IP((ReconocerTeclado[2]-6)/DimensionCelda);
    Titilar(96+DimensionX*DimensionCelda,6+DimensionY*DimensionCelda,96+(DimensionX+1)*(DimensionCelda),6+(DimensionY+1)*DimensionCelda);
    //----------------
-   IF NOT(EstadoCasillaParaJugar[Casillero]=1) THEN
+   IF (EstadoCasillaParaJugar[Casillero]=0 OR EstadoCasillaParaJugar[Casillero]=2)  OR EstadoCasillaParaJugar[Casillero]=3 THEN
+      //Valido solo si estado casilla es 0 2 3
       LOCAL VariableJuego:=CasillasParaJugar[Casillero];
       LOCAL Switch:=INPUT(VariableJuego,"Jugar");
        IF Switch THEN  
@@ -959,10 +937,105 @@ END;
 EXPORT RevisarCasillasJugadas( ) //Jugada que altera todas las variables en el sistema 
 BEGIN
  
+
+
+
+//LOCAL CasillasParaJugarOriginales:={}; //ORIGINALES NO SE MODIFICAN
+//LOCAL CasillasParaJugar:={}; //Casillas para Jugar, Incluye la casilla por defecto
+//LOCAL CasillaConocidaParaJugar:={}; //Marca 1 sólo si se conoce el contenido de la casilla
+//LOCAL EstadoCasillaParaJugar:={};  // Indica el estado 
+    // 0 -- NO SE CONOCE
+    // 1 -- CASILLA FIJA NO SE PUEDE MODIFICAR
+    // 2 -- CASILLA JUGADA SIN QUEJA AZUL
+    // 3 -- CASILLA JUGADA CON QUEJA ROJO
+    // 4 -- CASILLA DADA COMO PISTA MORADO   
+//NroCasillas  81
+//LOCAL NroCasillas33:=81;
+//LOCAL NroFichas33:=9;
+//LOCAL Fuente33:=5;
+//LOCAL Padding33:=24;
+//LOCAL LimiteIteracionGen33:=10;
+//LOCAL NroCasillasFijas33:=25;
+
+//LOCAL CASILLAFIJA:=       RGB(0,0,0);
+//LOCAL CASILAJUGADAOK:=    RGB(0,0,150);
+//LOCAL CASILLAJUGADAERROR:=RGB(150,0,0);
+//LOCAL CASILLAPISTA:=      RGB(75,0,75);
+ LOCAL CONTADORR:=0;
+ LOCAL GruposLlenos:=0; //Cuenta el numero de grupos 
+ LOCAL SumaDeCadaGrupo;
+ LOCAL LimiteParaGrupos;
+  CASE
+   IF TipoJuego=1 THEN LimiteParaGrupos:=10; END;
+   IF TipoJuego=2 THEN LimiteParaGrupos:=21; END;
+   IF TipoJuego=3 THEN LimiteParaGrupos:=45; END;
+  END;
+ //--------
+//BORRA LOS REGISTROS DE CASILLA MARCADA COMO ERROR
+ WHILE CONTADORR<SIZE(EstadoCasillaParaJugar) DO
+  CONTADORR:=CONTADORR+1;
+  IF EstadoCasillaParaJugar[CONTADORR]=3 THEN
+     EstadoCasillaParaJugar[CONTADORR]:=2;
+  END;
+ END;
+ //--------
+ CONTADORR:=0;
+ WHILE CONTADORR<SIZE(DatosGrupos) DO //analiza las casillas y marca error donde corresponda
+  CONTADORR:=CONTADORR+1;
+  LOCAL GrupoActual:=DatosGrupos[CONTADORR];  
+  SumaDeCadaGrupo:=AnalizarRepetidosEnCasilla(GrupoActual); 
+   IF LimiteParaGrupos=SumaDeCadaGrupo THEN
+      GruposLlenos:=GruposLlenos+1; //aumentando grupos
+   END;
+ END;
+//--------
+ IF SIZE(DatosGrupos)=GruposLlenos THEN
+   VictoriaJuego:=1;
+ END;
 END;
+//---------------------------------------------------
+EXPORT AnalizarRepetidosEnCasilla(CasillasParaAnalizar)
+BEGIN 
+  //devuelve suma de las casillas jugadas
+  LOCAL Suma:=0;
+  LOCAL CONTADOR:=0;
+  LOCAL FichasporGrupo:=MAKELIST({},X,1,NroFichas,1); //una lista que ordenara de acuerdo al nro de fichas
+   //-----------
+   WHILE CONTADOR<SIZE(CasillasParaAnalizar) DO
+     CONTADOR:=CONTADOR+1;
+     LOCAL Variable:=CasillasParaAnalizar[CONTADOR]; //es el codigo de una casilla
+     LOCAL ValorVariable:=CasillasParaJugar[Variable];
+     Suma:=Suma+CasillasParaJugar[Variable];
+       IF ValorVariable THEN
+           LOCAL LISTAVARIABLES:=FichasporGrupo[ValorVariable];
+           LISTAVARIABLES:=CONCAT(LISTAVARIABLES,{Variable});
+           FichasporGrupo[ValorVariable]:=LISTAVARIABLES;
+       END;
+   END;
+    //-----------
+   CONTADOR:=0;
+   LOCAL TodasLasVaribalesACorregir:={}; //Esta lista almacenara todas las casillas para marcar error
+   WHILE CONTADOR<NroFichas DO
+     CONTADOR:=CONTADOR+1;
+     LOCAL ListaAnalizada:=FichasporGrupo[CONTADOR];
+     LOCAL Tamano:=SIZE(ListaAnalizada);
+       IF Tamano>1 THEN
+          TodasLasVaribalesACorregir:=CONCAT(TodasLasVaribalesACorregir,ListaAnalizada);
+       END;
+   END;
+    //-----------
+   CONTADOR:=0;
+   LOCAL LIMITE:=SIZE(TodasLasVaribalesACorregir);
+      WHILE CONTADOR<LIMITE DO
+       CONTADOR:=CONTADOR+1;
+       LOCAL FichaRepetida:=TodasLasVaribalesACorregir[CONTADOR];
+         IF EstadoCasillaParaJugar[FichaRepetida]=2 THEN
+           EstadoCasillaParaJugar[FichaRepetida]:=3; 
+         END;
+      END;
+  RETURN(Suma);
 
-
-
+END;
 
 
 
