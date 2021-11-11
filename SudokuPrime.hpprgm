@@ -23,7 +23,7 @@ LOCAL NroCasillas23:=36;
 LOCAL NroFichas23:=6;
 LOCAL Fuente23:=6;
 LOCAL Padding23:=36;
-LOCAL LimiteIteracionGen23:=5;
+LOCAL LimiteIteracionGen23:=3;
 LOCAL NroCasillasFijas23:=15;
 //TIPO2 3x3
 LOCAL DatosGrupos33:={{1,2,3,10,11,12,19,20,21},{4,5,6,13,14,15,22,23,24},{7,8,9,16,17,18,25,26,27},{28,29,30,37,38,39,46,47,48},{31,32,33,40,41,42,49,50,51},{34,35,36,43,44,45,52,53,54},{55,56,57,64,65,66,73,74,75},{58,59,60,67,68,69,76,77,78},{61,62,63,70,71,72,79,80,81},{1,2,3,4,5,6,7,8,9},{10,11,12,13,14,15,16,17,18},{19,20,21,22,23,24,25,26,27},{28,29,30,31,32,33,34,35,36},{37,38,39,40,41,42,43,44,45},{46,47,48,49,50,51,52,53,54},{55,56,57,58,59,60,61,62,63},{64,65,66,67,68,69,70,71,72},{73,74,75,76,77,78,79,80,81},{1,10,19,28,37,46,55,64,73},{2,11,20,29,38,47,56,65,74},{3,12,21,30,39,48,57,66,75},{4,13,22,31,40,49,58,67,76},{5,14,23,32,41,50,59,68,77},{6,15,24,33,42,51,60,69,78},{7,16,25,34,43,52,61,70,79},{8,17,26,35,44,53,62,71,80},{9,18,27,36,45,54,63,72,81}};                          
@@ -32,7 +32,7 @@ LOCAL NroCasillas33:=81;
 LOCAL NroFichas33:=9;
 LOCAL Fuente33:=5;
 LOCAL Padding33:=24;
-LOCAL LimiteIteracionGen33:=10;
+LOCAL LimiteIteracionGen33:=2;
 LOCAL NroCasillasFijas33:=25;
 //---------------------------------------------------
 //Biblioteca de sudokus ya generados, la mayor parte del tiempo el generador 
@@ -103,9 +103,9 @@ LOCAL COLORBOTON:=RGB(60,60,60);
 LOCAL COLORBOTONT:=RGB(240,240,240);
 //.. Colores para casillas Jugadas
 LOCAL CASILLAFIJA:=       RGB(0,0,0);
-LOCAL CASILAJUGADAOK:=    RGB(0,0,150);
-LOCAL CASILLAJUGADAERROR:=RGB(150,0,0);
-LOCAL CASILLAPISTA:=      RGB(75,0,75);
+LOCAL CASILAJUGADAOK:=    RGB(0,0,250);
+LOCAL CASILLAJUGADAERROR:=RGB(250,0,0);
+LOCAL CASILLAPISTA:=      RGB(0,200,0);
 //---------------------------------------------------
 //Variables  para control táctil
 LOCAL nuevapantalla:=0;
@@ -180,13 +180,14 @@ LOCAL JuegoGuardado:=0; //No guardado
 // Jugar sistema
   JugarSistema(Casilla,Jugada);
   RevisarCasillasJugadas();
+  AnalizarRepetidosEnCasilla(CasillasParaAnalizar);
 //---------------------------------------------------
 VIEW "Sudoku",START()
 BEGIN 
   PantallaInicial();
   WAIT(0.5); 
   IF NOT(JuegoGuardado) THEN
-     TipoJuego:=RANDINT(1,3); //Tipo Aleatorio de Sudoku
+     TipoJuego:=3; //Tipo predefinido 3x3
      ConfigurarTipoSudoku();
      GenerarSudoku();
      JuegoGuardado:=1; //Guardar Juego
@@ -480,15 +481,15 @@ END;
 //------------------------------------------------------------------------------------------------------
 EXPORT DibujarCuadro(Xinicial,Yinicial,AnchoX,AnchoY)
 BEGIN
-  RECT_P(Xinicial,Yinicial,Xinicial+AnchoX,Yinicial+AnchoY,FONDO2);
+  RECT_P(G1,Xinicial,Yinicial,Xinicial+AnchoX,Yinicial+AnchoY,FONDO2);
 END;
 //---------------------------------------------------
 EXPORT Grafico()
 BEGIN
   startview(-4);
-  RECT_P(0,0,350,350,FONDO);
-  RECT_P(94,4,314,224,NEGRO,BLANCO);
-  RECT_P(96,6,312,222,NEGRO,BLANCO);
+  DIMGROB_P(G1,320,240,FONDO);   //<---- CREANDO DIMGROB1 PARA INICIO  FIN PESTAÑEO
+  RECT_P(G1,94,4,314,224,NEGRO,BLANCO);
+  RECT_P(G1,96,6,312,222,NEGRO,BLANCO);
     //variables inicio
       LOCAL InicioX:=104; //para tipo3
       LOCAL InicioY:=7;
@@ -503,12 +504,12 @@ BEGIN
       InicioY:=18;
       DibujarCuadro(204,7,107,107);
       DibujarCuadro(97,114,107,107);
-      LINE_P(97,60,311,60,GRIS2);
-      LINE_P(97,168,311,168,GRIS2);
-      LINE_P(150,7,150,221,GRIS2);
-      LINE_P(258,7,258,221,GRIS2);
-      LINE_P(97,114,311,114,NEGRO);
-      LINE_P(204,7,204,221,NEGRO);
+      LINE_P(G1,97,60,311,60,GRIS2);
+      LINE_P(G1,97,168,311,168,GRIS2);
+      LINE_P(G1,150,7,150,221,GRIS2);
+      LINE_P(G1,258,7,258,221,GRIS2);
+      LINE_P(G1,97,114,311,114,NEGRO);
+      LINE_P(G1,204,7,204,221,NEGRO);
     END;
     IF TipoJuego=2 THEN
       InicioX:=110;
@@ -516,64 +517,40 @@ BEGIN
       DibujarCuadro(204,7,107,71);
       DibujarCuadro(97,79,107,71);
       DibujarCuadro(204,150,107,71);
-      LINE_P(97,42,311,42,GRIS2);
-      LINE_P(97,114,311,114,GRIS2);
-      LINE_P(97,186,311,186,GRIS2);
-      LINE_P(132,7,132,221,GRIS2);
-      LINE_P(168,7,168,221,GRIS2);
-      LINE_P(240,7,240,221,GRIS2);
-      LINE_P(276,7,276,221,GRIS2);
-      LINE_P(97,150,311,150,NEGRO);
-      LINE_P(204,7,204,221,NEGRO);
-      LINE_P(97,78,311,78,NEGRO);
+      LINE_P(G1,97,42,311,42,GRIS2);
+      LINE_P(G1,97,114,311,114,GRIS2);
+      LINE_P(G1,97,186,311,186,GRIS2);
+      LINE_P(G1,132,7,132,221,GRIS2);
+      LINE_P(G1,168,7,168,221,GRIS2);
+      LINE_P(G1,240,7,240,221,GRIS2);
+      LINE_P(G1,276,7,276,221,GRIS2);
+      LINE_P(G1,97,150,311,150,NEGRO);
+      LINE_P(G1,204,7,204,221,NEGRO);
+      LINE_P(G1,97,78,311,78,NEGRO);
     END;
     IF TipoJuego=3 THEN
       DibujarCuadro(97,79,71,71);
       DibujarCuadro(168,7,71,71);
       DibujarCuadro(240,79,71,71);
       DibujarCuadro(168,150,71,71);
-      LINE_P(97,30,311,30,GRIS2);
-      LINE_P(97,54,311,54,GRIS2);
-      LINE_P(97,102,311,102,GRIS2);
-      LINE_P(97,126,311,126,GRIS2);
-      LINE_P(97,174,311,174,GRIS2);
-      LINE_P(97,198,311,198,GRIS2);
-      LINE_P(120,7,120,221,GRIS2);
-      LINE_P(144,7,144,221,GRIS2);
-      LINE_P(192,7,192,221,GRIS2);
-      LINE_P(216,7,216,221,GRIS2);
-      LINE_P(264,7,264,221,GRIS2);
-      LINE_P(288,7,288,221,GRIS2);
-      LINE_P(97,78,311,78,NEGRO);
-      LINE_P(97,150,311,150,NEGRO);
-      LINE_P(168,7,168,221,NEGRO);
-      LINE_P(240,7,240,221,NEGRO);
+      LINE_P(G1,97,30,311,30,GRIS2);
+      LINE_P(G1,97,54,311,54,GRIS2);
+      LINE_P(G1,97,102,311,102,GRIS2);
+      LINE_P(G1,97,126,311,126,GRIS2);
+      LINE_P(G1,97,174,311,174,GRIS2);
+      LINE_P(G1,97,198,311,198,GRIS2);
+      LINE_P(G1,120,7,120,221,GRIS2);
+      LINE_P(G1,144,7,144,221,GRIS2);
+      LINE_P(G1,192,7,192,221,GRIS2);
+      LINE_P(G1,216,7,216,221,GRIS2);
+      LINE_P(G1,264,7,264,221,GRIS2);
+      LINE_P(G1,288,7,288,221,GRIS2);
+      LINE_P(G1,97,78,311,78,NEGRO);
+      LINE_P(G1,97,150,311,150,NEGRO);
+      LINE_P(G1,168,7,168,221,NEGRO);
+      LINE_P(G1,240,7,240,221,NEGRO);
     END;
    END;
-
-
-//LOCAL CasillasParaJugarOriginales:={}; //ORIGINALES NO SE MODIFICAN
-//LOCAL CasillasParaJugar:={}; //Casillas para Jugar, Incluye la casilla por defecto
-//LOCAL CasillaConocidaParaJugar:={}; //Marca 1 sólo si se conoce el contenido de la casilla
-//LOCAL EstadoCasillaParaJugar:={};  // Indica el estado 
-    // 0 -- NO SE CONOCE
-    // 1 -- CASILLA FIJA NO SE PUEDE MODIFICAR
-    // 2 -- CASILLA JUGADA SIN QUEJA AZUL
-    // 3 -- CASILLA JUGADA CON QUEJA ROJO
-    // 4 -- CASILLA DADA COMO PISTA MORADO   
-//NroCasillas  81
-//LOCAL NroCasillas33:=81;
-//LOCAL NroFichas33:=9;
-//LOCAL Fuente33:=5;
-//LOCAL Padding33:=24;
-//LOCAL LimiteIteracionGen33:=10;
-//LOCAL NroCasillasFijas33:=25;
-
-//LOCAL CASILLAFIJA:=       RGB(0,0,0);
-//LOCAL CASILAJUGADAOK:=    RGB(0,0,150);
-//LOCAL CASILLAJUGADAERROR:=RGB(150,0,0);
-//LOCAL CASILLAPISTA:=      RGB(75,0,75);
-
     //Ciclo Dibujo
     WHILE ContadorTotal<NroCasillas DO
       LOCAL Fila:=IP(ContadorTotal/NroFichas);      
@@ -591,42 +568,44 @@ BEGIN
              IF INDICOLOR=4 THEN COLOR:=CASILLAPISTA; END;
            END;     
          LOCAL Texto:=CasillasParaJugar[ContadorTotal];
-         TEXTOUT_P(Texto,InicioX+Padding*Columna,InicioY+Padding*Fila,Fuente,COLOR);
+         TEXTOUT_P(Texto,G1,InicioX+Padding*Columna,InicioY+Padding*Fila,Fuente,COLOR);
         END;
 
     END;
-  TEXTOUT_P("[i] https://github.com/Saul11235/SudokuPrime",1,228,1,GRIS);
+  TEXTOUT_P("[i] https://github.com/Saul11235/SudokuPrime",G1,1,228,1,GRIS);
   //--------------------------------
-  RECT_P(0,0,25,25,ROJO);
-  TEXTOUT_P("X",6,-1,7,BLANCO);
-  TEXTOUT_P("Sudoku",29,2,5,AZUL1);
+  RECT_P(G1,0,0,25,25,ROJO);
+  TEXTOUT_P("X",G1,6,-1,7,BLANCO);
+  TEXTOUT_P("Sudoku",G1,34,-3,4,AZUL1);
+  TEXTOUT_P("prime",G1,38,10,4,AZUL1);
     //********  BOTON TIPO SUDOKU 2x2 2x3 3x3
-  RECT_P(10,30,85,64,COLORBOTON);
+  RECT_P(G1,10,30,85,64,COLORBOTON);
    LOCAL TEXTO:="";
     CASE
       IF  TipoJuego=1 THEN TEXTO:="2x2"END;
       IF  TipoJuego=2 THEN TEXTO:="2x3"END;
       IF  TipoJuego=3 THEN TEXTO:="3x3"END;
     END;   
-  TEXTOUT_P(TEXTO,30,34,7,COLORBOTONT);
+  TEXTOUT_P(TEXTO,G1,30,34,7,COLORBOTONT);
     //******** BOTON NUEVO SUDOKU
-    RECT_P(10,69,85,103,COLORBOTON);
-    TEXTOUT_P(CHAR({10000,9638}),29,73,7,COLORBOTONT);
+    RECT_P(G1,10,69,85,103,COLORBOTON);
+    TEXTOUT_P(CHAR({10000,9638}),G1,29,73,7,COLORBOTONT);
     //******** BOTON REINICIAR
   IF NOT(SudokuNuevo) THEN
-   RECT_P(10,108,85,142,COLORBOTON);
-   TEXTOUT_P(CHAR({9638,8634}),32,112,7,COLORBOTONT);
+   RECT_P(G1,10,108,85,142,COLORBOTON);
+   TEXTOUT_P(CHAR({9638,8634}),G1,32,112,7,COLORBOTONT);
   END;
     //******** BOTON PISTA
   IF  NOT(VictoriaJuego) THEN
-     RECT_P(10,147,85,181,COLORBOTON); //Boton resolver todo
-     RECT_P(10,186,85,220,COLORBOTON); //boton Pista
-     TEXTOUT_P(CHAR({9638,10004,10004}),23,151,7,COLORBOTONT);
-     TEXTOUT_P(CHAR({9638,10004}),32,190,7,COLORBOTONT);
+     RECT_P(G1,10,147,85,181,COLORBOTON); //Boton resolver todo
+     RECT_P(G1,10,186,85,220,COLORBOTON); //boton Pista
+     TEXTOUT_P(CHAR({9638,10004,10004}),G1,23,151,7,COLORBOTONT);
+     TEXTOUT_P(CHAR({9638,10004}),G1,32,190,7,COLORBOTONT);
   ELSE
-     TEXTOUT_P("OK!",32,186,7,AZUL1);
+     TEXTOUT_P("OK!",G1,32,186,7,AZUL1);
   END;
     //******** 
+  BLIT_P(0,0,G1); //<--- Copia G1 para evitar pestañeo
   botonera();// <--- LLAMA A FUNCION DE BOTONERAS 
 END;
 //------------------------------------------------------------------------------------------------------
@@ -872,7 +851,8 @@ BEGIN
    LOCAL DimensionY:=IP((ReconocerTeclado[2]-6)/DimensionCelda);
    Titilar(96+DimensionX*DimensionCelda,6+DimensionY*DimensionCelda,96+(DimensionX+1)*(DimensionCelda),6+(DimensionY+1)*DimensionCelda);
    //----------------
-   IF NOT(EstadoCasillaParaJugar[Casillero]=1) THEN
+   IF (EstadoCasillaParaJugar[Casillero]=0 OR EstadoCasillaParaJugar[Casillero]=2)  OR EstadoCasillaParaJugar[Casillero]=3 THEN
+      //Valido solo si estado casilla es 0 2 3
       LOCAL VariableJuego:=CasillasParaJugar[Casillero];
       LOCAL Switch:=INPUT(VariableJuego,"Jugar");
        IF Switch THEN  
@@ -957,10 +937,105 @@ END;
 EXPORT RevisarCasillasJugadas( ) //Jugada que altera todas las variables en el sistema 
 BEGIN
  
+
+
+
+//LOCAL CasillasParaJugarOriginales:={}; //ORIGINALES NO SE MODIFICAN
+//LOCAL CasillasParaJugar:={}; //Casillas para Jugar, Incluye la casilla por defecto
+//LOCAL CasillaConocidaParaJugar:={}; //Marca 1 sólo si se conoce el contenido de la casilla
+//LOCAL EstadoCasillaParaJugar:={};  // Indica el estado 
+    // 0 -- NO SE CONOCE
+    // 1 -- CASILLA FIJA NO SE PUEDE MODIFICAR
+    // 2 -- CASILLA JUGADA SIN QUEJA AZUL
+    // 3 -- CASILLA JUGADA CON QUEJA ROJO
+    // 4 -- CASILLA DADA COMO PISTA MORADO   
+//NroCasillas  81
+//LOCAL NroCasillas33:=81;
+//LOCAL NroFichas33:=9;
+//LOCAL Fuente33:=5;
+//LOCAL Padding33:=24;
+//LOCAL LimiteIteracionGen33:=10;
+//LOCAL NroCasillasFijas33:=25;
+
+//LOCAL CASILLAFIJA:=       RGB(0,0,0);
+//LOCAL CASILAJUGADAOK:=    RGB(0,0,150);
+//LOCAL CASILLAJUGADAERROR:=RGB(150,0,0);
+//LOCAL CASILLAPISTA:=      RGB(75,0,75);
+ LOCAL CONTADORR:=0;
+ LOCAL GruposLlenos:=0; //Cuenta el numero de grupos 
+ LOCAL SumaDeCadaGrupo;
+ LOCAL LimiteParaGrupos;
+  CASE
+   IF TipoJuego=1 THEN LimiteParaGrupos:=10; END;
+   IF TipoJuego=2 THEN LimiteParaGrupos:=21; END;
+   IF TipoJuego=3 THEN LimiteParaGrupos:=45; END;
+  END;
+ //--------
+//BORRA LOS REGISTROS DE CASILLA MARCADA COMO ERROR
+ WHILE CONTADORR<SIZE(EstadoCasillaParaJugar) DO
+  CONTADORR:=CONTADORR+1;
+  IF EstadoCasillaParaJugar[CONTADORR]=3 THEN
+     EstadoCasillaParaJugar[CONTADORR]:=2;
+  END;
+ END;
+ //--------
+ CONTADORR:=0;
+ WHILE CONTADORR<SIZE(DatosGrupos) DO //analiza las casillas y marca error donde corresponda
+  CONTADORR:=CONTADORR+1;
+  LOCAL GrupoActual:=DatosGrupos[CONTADORR];  
+  SumaDeCadaGrupo:=AnalizarRepetidosEnCasilla(GrupoActual); 
+   IF LimiteParaGrupos=SumaDeCadaGrupo THEN
+      GruposLlenos:=GruposLlenos+1; //aumentando grupos
+   END;
+ END;
+//--------
+ IF SIZE(DatosGrupos)=GruposLlenos THEN
+   VictoriaJuego:=1;
+ END;
 END;
+//---------------------------------------------------
+EXPORT AnalizarRepetidosEnCasilla(CasillasParaAnalizar)
+BEGIN 
+  //devuelve suma de las casillas jugadas
+  LOCAL Suma:=0;
+  LOCAL CONTADOR:=0;
+  LOCAL FichasporGrupo:=MAKELIST({},X,1,NroFichas,1); //una lista que ordenara de acuerdo al nro de fichas
+   //-----------
+   WHILE CONTADOR<SIZE(CasillasParaAnalizar) DO
+     CONTADOR:=CONTADOR+1;
+     LOCAL Variable:=CasillasParaAnalizar[CONTADOR]; //es el codigo de una casilla
+     LOCAL ValorVariable:=CasillasParaJugar[Variable];
+     Suma:=Suma+CasillasParaJugar[Variable];
+       IF ValorVariable THEN
+           LOCAL LISTAVARIABLES:=FichasporGrupo[ValorVariable];
+           LISTAVARIABLES:=CONCAT(LISTAVARIABLES,{Variable});
+           FichasporGrupo[ValorVariable]:=LISTAVARIABLES;
+       END;
+   END;
+    //-----------
+   CONTADOR:=0;
+   LOCAL TodasLasVaribalesACorregir:={}; //Esta lista almacenara todas las casillas para marcar error
+   WHILE CONTADOR<NroFichas DO
+     CONTADOR:=CONTADOR+1;
+     LOCAL ListaAnalizada:=FichasporGrupo[CONTADOR];
+     LOCAL Tamano:=SIZE(ListaAnalizada);
+       IF Tamano>1 THEN
+          TodasLasVaribalesACorregir:=CONCAT(TodasLasVaribalesACorregir,ListaAnalizada);
+       END;
+   END;
+    //-----------
+   CONTADOR:=0;
+   LOCAL LIMITE:=SIZE(TodasLasVaribalesACorregir);
+      WHILE CONTADOR<LIMITE DO
+       CONTADOR:=CONTADOR+1;
+       LOCAL FichaRepetida:=TodasLasVaribalesACorregir[CONTADOR];
+         IF EstadoCasillaParaJugar[FichaRepetida]=2 THEN
+           EstadoCasillaParaJugar[FichaRepetida]:=3; 
+         END;
+      END;
+  RETURN(Suma);
 
-
-
+END;
 
 
 
